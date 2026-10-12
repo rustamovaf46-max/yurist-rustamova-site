@@ -126,8 +126,39 @@ try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; 
  .service-card-featured .service-open{left:auto;right:30px;bottom:32px;width:225px}
 }
 @media(max-width:700px){.service-card-featured{border-color:#a17a49}}
+
+/* Correction of video/pricing overflow in narrow and intermediate screens. */
+.video-layout{grid-template-columns:minmax(0,.75fr) minmax(0,1.35fr)}
+.video-layout>*{min-width:0}
+.video-player-frame,.video-stage{min-width:0;max-width:100%}
+.price-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.price-grid>*{min-width:0}
+.price-panel{min-width:0;max-width:100%}
+@media(min-width:701px) and (max-width:1100px){
+  .price-panel{padding:26px}
+  .price-amount{font-size:clamp(42px,5.1vw,65px)}
+  .price-amount small{font-size:21px}
+  .price-amount span{font-size:31px}
+}
+@media(max-width:900px){
+  .video-layout,.price-grid{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:700px){
+  .price-grid{grid-template-columns:minmax(0,1fr)}
+  .section-price h2{font-size:clamp(35px,10vw,42px);overflow-wrap:break-word}
+  .price-panel{padding:clamp(18px,5vw,28px)}
+  .price-amount{font-size:clamp(38px,11.5vw,62px);white-space:normal}
+  .price-amount small{font-size:clamp(16px,4.5vw,23px)}
+  .price-amount span{font-size:clamp(24px,8vw,34px)}
+}
+@media(max-width:360px){
+  .brand strong{font-size:19px}
+  .brand small{font-size:7px;letter-spacing:1px}
+  .header-content{gap:8px}
+  .menu-toggle{padding:6px}
+}
 </style>
-<script id="wix-site-script" src="https://manage.wix.com/_api/headless-business-setup/v1/headless-business/site-script.js" data-client-id="e9f38fc9-21ce-4e19-85e5-cbb150bf4284" async></script></head>
+</head>
 <body>
 <a class="skip" href="#main">Перейти к содержимому</a>
 <header class="site-header" id="top">
@@ -294,7 +325,7 @@ try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; 
     document.addEventListener(type, cancelReset, { once: true, passive: true });
   }
   function resetToStart() {
-    if (interacted) return;
+    if (interacted || window.location.hash) return;
     const html = document.documentElement;
     const previous = html.style.scrollBehavior;
     html.style.scrollBehavior = 'auto';
@@ -305,6 +336,12 @@ try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; 
     resetToStart();
     requestAnimationFrame(resetToStart);
     setTimeout(resetToStart, 100);
+  });
+  window.addEventListener('load', function () {
+    resetToStart();
+    requestAnimationFrame(resetToStart);
+    setTimeout(resetToStart, 180);
+    setTimeout(resetToStart, 500);
   });
   // Some mobile browsers restore a fragment or scroll after first paint.
   if (document.readyState === 'loading') {
