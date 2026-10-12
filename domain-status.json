@@ -1,13 +1,13 @@
 {
-  "checked_at": "2026-10-12T08:39:48.825Z",
+  "checked_at": "2026-10-12T08:54:49.223Z",
   "domain": "xn--80aafwvmkbibjcl2m.xn--p1ai",
   "apex_a": {
     "status": 0,
     "answers": [
-      "185.199.111.153",
-      "185.199.108.153",
+      "185.199.109.153",
       "185.199.110.153",
-      "185.199.109.153"
+      "185.199.108.153",
+      "185.199.111.153"
     ]
   },
   "apex_aaaa": {
@@ -34,17 +34,29 @@
   },
   "google_ns": {
     "status": 0,
-    "answers": []
+    "answers": [
+      "ns1.reg.ru.",
+      "ns2.reg.ru."
+    ]
   },
   "google_caa": {
     "status": 0,
     "answers": []
   },
   "registry_whois": {
-    "lines": [],
+    "lines": [
+      "domain:        XN--80AAFWVMKBIBJCL2M.XN--P1AI",
+      "nserver:       ns1.reg.ru.",
+      "nserver:       ns2.reg.ru.",
+      "state:         REGISTERED, DELEGATED, VERIFIED",
+      "registrar:     REGRU-RF",
+      "created:       2026-10-12T00:10:56Z",
+      "paid-till:     2027-10-12T00:10:56Z",
+      "free-date:     2027-11-12",
+      "source:        TCI"
+    ],
     "has_data": true,
-    "unregistered": true,
-    "public_not_found_message": "% TCI Whois Service. Terms of use:\n% https://tcinet.ru/documents/whois_ru_rf.pdf (in Russian)\n% https://tcinet.ru/documents/whois_su.pdf (in Russian)\n\nNo entries found for the selected source(s).\n\nLast updated on 2026-10-12T08:38:01Z"
+    "unregistered": false
   },
   "registry_rdap": {
     "error": "TypeError: fetch failed"
@@ -132,9 +144,9 @@
       "ok": true
     }
   },
+  "https_ready": false,
   "https_activation": {
-    "attempted": true,
-    "result": "not_yet_available_or_permission_denied",
-    "http_status": 403
+    "attempted": false,
+    "result": "certificate_not_ready"
   }
 }
