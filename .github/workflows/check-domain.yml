@@ -89,6 +89,24 @@ jobs:
               dns_www_correct: cname.answers.some(a => (a.endsWith('.') ? a.slice(0, -1) : a).toLowerCase() === 'rustamovaf46-max.github.io'),
               github_pages: pages,
               google_ns: await resolveDns(apex, 'NS'),
+              registry_whois: await (async () => {
+                const net = require('node:net');
+                return await new Promise(resolve => {
+                  const sock = net.createConnection({host:'whois.tcinet.ru',port:43});
+                  let raw = '';
+                  let settled = false;
+                  const done = data => { if(!settled) { settled=true; sock.destroy(); resolve(data); } };
+                  sock.setTimeout(12000);
+                  sock.on('connect', () => sock.write(apex + '\\r\\n'));
+                  sock.on('data', chunk => { raw += chunk.toString('utf8'); if(raw.length>32000) sock.end(); });
+                  sock.on('end', () => {
+                    const publicLines = raw.split(/\\r?\\n/).filter(line => /^(domain|nserver|state|registrar|created|paid-till|free-date|source):/i.test(line));
+                    done({lines:publicLines, has_data:raw.length>0, unregistered:/not found|no entries found|not registered|не зарегистрирован/i.test(raw)});
+                  });
+                  sock.on('timeout', () => done({error:'TCP Whois timeout'}));
+                  sock.on('error', e => done({error:String(e)}));
+                });
+              })(),
               registry_rdap: await (async () => {
                 const url = 'https://rdap.tcinet.ru/rdap/domain/' + apex;
                 try {
