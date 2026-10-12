@@ -88,6 +88,16 @@ jobs:
               dns_apex_correct: actual.size === expected.size && [...expected].every(ip => actual.has(ip)),
               dns_www_correct: cname.answers.some(a => (a.endsWith('.') ? a.slice(0, -1) : a).toLowerCase() === 'rustamovaf46-max.github.io'),
               github_pages: pages,
+              google_ns: await resolveDns(apex, 'NS'),
+              cloudflare_a: await (async () => {
+                try {
+                  const resp = await fetch('https://cloudflare-dns.com/dns-query?name=' + apex + '&type=A', {
+                    headers: { Accept: 'application/dns-json' }, signal: AbortSignal.timeout(12000)
+                  });
+                  const data = await resp.json();
+                  return { status:data.Status, answers:(data.Answer||[]).map(v=>v.data), authority:(data.Authority||[]).map(v=>v.data) };
+                } catch(e) { return {error:String(e)}; }
+              })(),
               https
             };
             const path = 'domain-status.json';
