@@ -90,6 +90,11 @@ jobs:
                   continue
               text = p.read_text(encoding="utf-8")
               text = text.replace(old, domain)
+              # Относительные ссылки работают и на github.io, и на собственном домене.
+              text = text.replace('href="/poryadok-polzovaniya-kvartiroy.html"', 'href="poryadok-polzovaniya-kvartiroy.html"')
+              text = text.replace('href="/privacy-policy.html"', 'href="privacy-policy.html"')
+              text = text.replace('href="/assets/favicon.svg"', 'href="assets/favicon.svg"')
+              text = text.replace('href="/#services"', 'href="./#services"')
               p.write_text(text, encoding="utf-8")
           published = [p for p in pages if p.name != "index.html" and
                        not p.name.startswith("googled3be") and ".git" not in p.parts]
