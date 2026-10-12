@@ -1,13 +1,13 @@
 {
-  "checked_at": "2026-10-12T13:00:02.263Z",
+  "checked_at": "2026-10-12T13:00:23.845Z",
   "domain": "xn--80aafwvmkbibjcl2m.xn--p1ai",
   "apex_a": {
     "status": 0,
     "answers": [
       "185.199.111.153",
       "185.199.110.153",
-      "185.199.109.153",
-      "185.199.108.153"
+      "185.199.108.153",
+      "185.199.109.153"
     ]
   },
   "apex_aaaa": {
@@ -35,8 +35,8 @@
   "google_ns": {
     "status": 0,
     "answers": [
-      "ns1.reg.ru.",
-      "ns2.reg.ru."
+      "ns2.reg.ru.",
+      "ns1.reg.ru."
     ]
   },
   "google_caa": {
