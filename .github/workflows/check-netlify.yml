@@ -57,8 +57,13 @@ jobs:
                   result.has_phone = body.includes('79099282398');
                   result.has_max = body.includes('max.ru');
                   result.title = body.match(/<title>([^<]*)<\/title>/)?.[1] || '';
+                  result.has_layout_fix = body.includes('Correction of video/pricing overflow');
+                  result.no_obsolete_wix_script = !body.includes('wix-site-script');
+                  result.has_scroll_fix = body.includes('setTimeout(resetToStart, 500)');
                   result.ok = result.ok && result.has_rustamova &&
-                    result.has_phone && result.has_max;
+                    result.has_phone && result.has_max &&
+                    result.has_layout_fix && result.no_obsolete_wix_script &&
+                    result.has_scroll_fix;
                 }
                 if (path === '/googled3be2855f213bfb7.html') {
                   const body = await response.text();
