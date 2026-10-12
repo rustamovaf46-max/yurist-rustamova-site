@@ -1,0 +1,512 @@
+{
+  "checked_at": "2026-10-12T23:26:00.253296+00:00",
+  "domain": "xn--80aafwvmkbibjcl2m.xn--p1ai",
+  "new_ip": "37.140.192.146",
+  "source": {
+    "html_pages": 4,
+    "sitemap_urls": [
+      "https://xn--80aafwvmkbibjcl2m.xn--p1ai/",
+      "https://xn--80aafwvmkbibjcl2m.xn--p1ai/poryadok-polzovaniya-kvartiroy.html",
+      "https://xn--80aafwvmkbibjcl2m.xn--p1ai/vselenie-v-kvartiru-cherez-sud.html",
+      "https://xn--80aafwvmkbibjcl2m.xn--p1ai/privacy-policy.html"
+    ],
+    "issues": []
+  },
+  "origins": {
+    "reg": {
+      "/googled3be2855f213bfb7.html": {
+        "requested_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/googled3be2855f213bfb7.html",
+        "http_status": 200,
+        "content_type": "text/html",
+        "final_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/googled3be2855f213bfb7.html",
+        "remote_ip": "37.140.192.146",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 53,
+        "matches_repository": true,
+        "ok": true
+      },
+      "/sitemap.xml": {
+        "requested_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/sitemap.xml",
+        "http_status": 200,
+        "content_type": "text/xml",
+        "final_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/sitemap.xml",
+        "remote_ip": "37.140.192.146",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 455,
+        "matches_repository": true,
+        "ok": true
+      },
+      "/91f7e03d63fefe7098456dca52d83d4a.txt": {
+        "requested_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/91f7e03d63fefe7098456dca52d83d4a.txt",
+        "http_status": 200,
+        "content_type": "text/plain",
+        "final_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/91f7e03d63fefe7098456dca52d83d4a.txt",
+        "remote_ip": "37.140.192.146",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 33,
+        "matches_repository": true,
+        "ok": true
+      },
+      "/robots.txt": {
+        "requested_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/robots.txt",
+        "http_status": 200,
+        "content_type": "text/plain",
+        "final_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/robots.txt",
+        "remote_ip": "37.140.192.146",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 83,
+        "matches_repository": true,
+        "ok": true
+      },
+      "/": {
+        "requested_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/",
+        "http_status": 200,
+        "content_type": "text/html",
+        "final_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/",
+        "remote_ip": "37.140.192.146",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 60876,
+        "matches_repository": true,
+        "ok": true,
+        "content_flags": {
+          "owner": true,
+          "phone": true,
+          "canonical": true
+        }
+      },
+      "/privacy-policy.html": {
+        "requested_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/privacy-policy.html",
+        "http_status": 200,
+        "content_type": "text/html",
+        "final_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/privacy-policy.html",
+        "remote_ip": "37.140.192.146",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 10522,
+        "matches_repository": true,
+        "ok": true
+      },
+      "/vselenie-v-kvartiru-cherez-sud.html": {
+        "requested_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/vselenie-v-kvartiru-cherez-sud.html",
+        "http_status": 200,
+        "content_type": "text/html",
+        "final_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/vselenie-v-kvartiru-cherez-sud.html",
+        "remote_ip": "37.140.192.146",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 22095,
+        "matches_repository": true,
+        "ok": true
+      },
+      "/poryadok-polzovaniya-kvartiroy.html": {
+        "requested_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/poryadok-polzovaniya-kvartiroy.html",
+        "http_status": 200,
+        "content_type": "text/html",
+        "final_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/poryadok-polzovaniya-kvartiroy.html",
+        "remote_ip": "37.140.192.146",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 22975,
+        "matches_repository": true,
+        "ok": true
+      },
+      "/assets/favicon.svg": {
+        "requested_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/favicon.svg",
+        "http_status": 200,
+        "content_type": "image/svg+xml",
+        "final_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/favicon.svg",
+        "remote_ip": "37.140.192.146",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 353,
+        "matches_repository": true,
+        "ok": true
+      },
+      "/assets/fatima-portrait.webp": {
+        "requested_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/fatima-portrait.webp",
+        "http_status": 200,
+        "content_type": "image/webp",
+        "final_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/fatima-portrait.webp",
+        "remote_ip": "37.140.192.146",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 52324,
+        "matches_repository": true,
+        "ok": true
+      },
+      "/assets/hero-mobile.webp": {
+        "requested_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/hero-mobile.webp",
+        "http_status": 200,
+        "content_type": "image/webp",
+        "final_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/hero-mobile.webp",
+        "remote_ip": "37.140.192.146",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 20134,
+        "matches_repository": true,
+        "ok": true
+      },
+      "/assets/hero-handshake.webp": {
+        "requested_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/hero-handshake.webp",
+        "http_status": 200,
+        "content_type": "image/webp",
+        "final_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/hero-handshake.webp",
+        "remote_ip": "37.140.192.146",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 39702,
+        "matches_repository": true,
+        "ok": true
+      },
+      "/assets/video-poster.webp": {
+        "requested_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/video-poster.webp",
+        "http_status": 200,
+        "content_type": "image/webp",
+        "final_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/video-poster.webp",
+        "remote_ip": "37.140.192.146",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 22950,
+        "matches_repository": true,
+        "ok": true
+      },
+      "/assets/fatima-promo.mp4": {
+        "requested_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/fatima-promo.mp4",
+        "http_status": 200,
+        "content_type": "video/mp4",
+        "final_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/fatima-promo.mp4",
+        "remote_ip": "37.140.192.146",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 1804967,
+        "matches_repository": true,
+        "ok": true
+      }
+    },
+    "public": {
+      "/googled3be2855f213bfb7.html": {
+        "requested_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/googled3be2855f213bfb7.html",
+        "http_status": 200,
+        "content_type": "text/html; charset=UTF-8",
+        "final_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/googled3be2855f213bfb7.html",
+        "remote_ip": "75.2.60.5",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 53,
+        "matches_repository": true,
+        "ok": true
+      },
+      "/": {
+        "requested_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/",
+        "http_status": 200,
+        "content_type": "text/html; charset=UTF-8",
+        "final_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/",
+        "remote_ip": "75.2.60.5",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 61048,
+        "matches_repository": false,
+        "ok": true,
+        "content_flags": {
+          "owner": true,
+          "phone": true,
+          "canonical": true
+        }
+      },
+      "/sitemap.xml": {
+        "requested_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/sitemap.xml",
+        "http_status": 200,
+        "content_type": "application/xml",
+        "final_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/sitemap.xml",
+        "remote_ip": "75.2.60.5",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 455,
+        "matches_repository": true,
+        "ok": true
+      },
+      "/robots.txt": {
+        "requested_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/robots.txt",
+        "http_status": 200,
+        "content_type": "text/plain; charset=UTF-8",
+        "final_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/robots.txt",
+        "remote_ip": "75.2.60.5",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 83,
+        "matches_repository": true,
+        "ok": true
+      },
+      "/91f7e03d63fefe7098456dca52d83d4a.txt": {
+        "requested_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/91f7e03d63fefe7098456dca52d83d4a.txt",
+        "http_status": 404,
+        "content_type": "text/html; charset=utf-8",
+        "final_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/91f7e03d63fefe7098456dca52d83d4a.txt",
+        "remote_ip": "75.2.60.5",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 3861,
+        "matches_repository": false,
+        "ok": false
+      },
+      "/vselenie-v-kvartiru-cherez-sud.html": {
+        "requested_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/vselenie-v-kvartiru-cherez-sud.html",
+        "http_status": 200,
+        "content_type": "text/html; charset=UTF-8",
+        "final_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/vselenie-v-kvartiru-cherez-sud.html",
+        "remote_ip": "75.2.60.5",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 22267,
+        "matches_repository": false,
+        "ok": true
+      },
+      "/privacy-policy.html": {
+        "requested_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/privacy-policy.html",
+        "http_status": 200,
+        "content_type": "text/html; charset=UTF-8",
+        "final_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/privacy-policy.html",
+        "remote_ip": "75.2.60.5",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 10934,
+        "matches_repository": false,
+        "ok": true
+      },
+      "/poryadok-polzovaniya-kvartiroy.html": {
+        "requested_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/poryadok-polzovaniya-kvartiroy.html",
+        "http_status": 200,
+        "content_type": "text/html; charset=UTF-8",
+        "final_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/poryadok-polzovaniya-kvartiroy.html",
+        "remote_ip": "75.2.60.5",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 23151,
+        "matches_repository": false,
+        "ok": true
+      },
+      "/assets/favicon.svg": {
+        "requested_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/favicon.svg",
+        "http_status": 200,
+        "content_type": "image/svg+xml",
+        "final_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/favicon.svg",
+        "remote_ip": "75.2.60.5",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 353,
+        "matches_repository": true,
+        "ok": true
+      },
+      "/assets/fatima-portrait.webp": {
+        "requested_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/fatima-portrait.webp",
+        "http_status": 200,
+        "content_type": "image/webp",
+        "final_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/fatima-portrait.webp",
+        "remote_ip": "75.2.60.5",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 52324,
+        "matches_repository": true,
+        "ok": true
+      },
+      "/assets/hero-handshake.webp": {
+        "requested_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/hero-handshake.webp",
+        "http_status": 200,
+        "content_type": "image/webp",
+        "final_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/hero-handshake.webp",
+        "remote_ip": "75.2.60.5",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 39702,
+        "matches_repository": true,
+        "ok": true
+      },
+      "/assets/fatima-promo.mp4": {
+        "requested_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/fatima-promo.mp4",
+        "http_status": 200,
+        "content_type": "video/mp4",
+        "final_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/fatima-promo.mp4",
+        "remote_ip": "75.2.60.5",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 1804967,
+        "matches_repository": true,
+        "ok": true
+      },
+      "/assets/video-poster.webp": {
+        "requested_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/video-poster.webp",
+        "http_status": 200,
+        "content_type": "image/webp",
+        "final_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/video-poster.webp",
+        "remote_ip": "75.2.60.5",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 22950,
+        "matches_repository": true,
+        "ok": true
+      },
+      "/assets/hero-mobile.webp": {
+        "requested_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/hero-mobile.webp",
+        "http_status": 200,
+        "content_type": "image/webp",
+        "final_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/assets/hero-mobile.webp",
+        "remote_ip": "75.2.60.5",
+        "ssl_verify_result": 0,
+        "curl_exit": 0,
+        "error": null,
+        "bytes": 20134,
+        "matches_repository": true,
+        "ok": true
+      }
+    }
+  },
+  "authoritative_dns": {
+    "ns1.reg.ru": {
+      "xn--80aafwvmkbibjcl2m.xn--p1ai A": {
+        "answer": "xn--80aafwvmkbibjcl2m.xn--p1ai.\t86400 IN A\t75.2.60.5",
+        "exit": 0
+      },
+      "xn--80aafwvmkbibjcl2m.xn--p1ai AAAA": {
+        "answer": "",
+        "exit": 0
+      },
+      "xn--80aafwvmkbibjcl2m.xn--p1ai NS": {
+        "answer": "xn--80aafwvmkbibjcl2m.xn--p1ai.\t86400 IN NS\tns1.reg.ru.\nxn--80aafwvmkbibjcl2m.xn--p1ai.\t86400 IN NS\tns2.reg.ru.",
+        "exit": 0
+      },
+      "xn--80aafwvmkbibjcl2m.xn--p1ai MX": {
+        "answer": "",
+        "exit": 0
+      },
+      "xn--80aafwvmkbibjcl2m.xn--p1ai TXT": {
+        "answer": "",
+        "exit": 0
+      },
+      "xn--80aafwvmkbibjcl2m.xn--p1ai CAA": {
+        "answer": "",
+        "exit": 0
+      },
+      "www.xn--80aafwvmkbibjcl2m.xn--p1ai A": {
+        "answer": "www.xn--80aafwvmkbibjcl2m.xn--p1ai. 86400 IN CNAME prismatic-pony-7528de.netlify.app.",
+        "exit": 0
+      },
+      "www.xn--80aafwvmkbibjcl2m.xn--p1ai AAAA": {
+        "answer": "www.xn--80aafwvmkbibjcl2m.xn--p1ai. 86400 IN CNAME prismatic-pony-7528de.netlify.app.",
+        "exit": 0
+      },
+      "www.xn--80aafwvmkbibjcl2m.xn--p1ai CNAME": {
+        "answer": "www.xn--80aafwvmkbibjcl2m.xn--p1ai. 86400 IN CNAME prismatic-pony-7528de.netlify.app.",
+        "exit": 0
+      },
+      "_dmarc.xn--80aafwvmkbibjcl2m.xn--p1ai TXT": {
+        "answer": "",
+        "exit": 0
+      }
+    },
+    "ns2.reg.ru": {
+      "xn--80aafwvmkbibjcl2m.xn--p1ai A": {
+        "answer": "xn--80aafwvmkbibjcl2m.xn--p1ai.\t86400 IN A\t75.2.60.5",
+        "exit": 0
+      },
+      "xn--80aafwvmkbibjcl2m.xn--p1ai AAAA": {
+        "answer": "",
+        "exit": 0
+      },
+      "xn--80aafwvmkbibjcl2m.xn--p1ai NS": {
+        "answer": "xn--80aafwvmkbibjcl2m.xn--p1ai.\t86400 IN NS\tns1.reg.ru.\nxn--80aafwvmkbibjcl2m.xn--p1ai.\t86400 IN NS\tns2.reg.ru.",
+        "exit": 0
+      },
+      "xn--80aafwvmkbibjcl2m.xn--p1ai MX": {
+        "answer": "",
+        "exit": 0
+      },
+      "xn--80aafwvmkbibjcl2m.xn--p1ai TXT": {
+        "answer": "",
+        "exit": 0
+      },
+      "xn--80aafwvmkbibjcl2m.xn--p1ai CAA": {
+        "answer": "",
+        "exit": 0
+      },
+      "www.xn--80aafwvmkbibjcl2m.xn--p1ai A": {
+        "answer": "www.xn--80aafwvmkbibjcl2m.xn--p1ai. 86400 IN CNAME prismatic-pony-7528de.netlify.app.",
+        "exit": 0
+      },
+      "www.xn--80aafwvmkbibjcl2m.xn--p1ai AAAA": {
+        "answer": "www.xn--80aafwvmkbibjcl2m.xn--p1ai. 86400 IN CNAME prismatic-pony-7528de.netlify.app.",
+        "exit": 0
+      },
+      "www.xn--80aafwvmkbibjcl2m.xn--p1ai CNAME": {
+        "answer": "www.xn--80aafwvmkbibjcl2m.xn--p1ai. 86400 IN CNAME prismatic-pony-7528de.netlify.app.",
+        "exit": 0
+      },
+      "_dmarc.xn--80aafwvmkbibjcl2m.xn--p1ai TXT": {
+        "answer": "",
+        "exit": 0
+      }
+    }
+  },
+  "new_origin_http_ready": true,
+  "new_origin_tls": {
+    "xn--80aafwvmkbibjcl2m.xn--p1ai": {
+      "requested_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/",
+      "http_status": 0,
+      "content_type": null,
+      "final_url": "https://xn--80aafwvmkbibjcl2m.xn--p1ai/",
+      "remote_ip": "37.140.192.146",
+      "ssl_verify_result": 1,
+      "curl_exit": 60,
+      "error": "curl: (60) SSL: no alternative certificate subject name matches target host name 'xn--80aafwvmkbibjcl2m.xn--p1ai'\nMore details here: https://curl.se/docs/sslcerts.html\n\ncurl failed to verify the legitimacy of the server and therefore could not\nestablish a secure connection to it. To learn more about this situation and\nhow to fix it, please visit the web page mentioned above.",
+      "has_owner": false,
+      "ok": false
+    },
+    "www.xn--80aafwvmkbibjcl2m.xn--p1ai": {
+      "requested_url": "https://www.xn--80aafwvmkbibjcl2m.xn--p1ai/",
+      "http_status": 0,
+      "content_type": null,
+      "final_url": "https://www.xn--80aafwvmkbibjcl2m.xn--p1ai/",
+      "remote_ip": "37.140.192.146",
+      "ssl_verify_result": 1,
+      "curl_exit": 60,
+      "error": "curl: (60) SSL: no alternative certificate subject name matches target host name 'www.xn--80aafwvmkbibjcl2m.xn--p1ai'\nMore details here: https://curl.se/docs/sslcerts.html\n\ncurl failed to verify the legitimacy of the server and therefore could not\nestablish a secure connection to it. To learn more about this situation and\nhow to fix it, please visit the web page mentioned above.",
+      "has_owner": false,
+      "ok": false
+    }
+  },
+  "limitations": [
+    "Filesystem owner and permissions, full DNS zone backup, and browser/mobile layout require hosting access.",
+    "This workflow performs no DNS changes, certificate installation or deployment."
+  ]
+}
