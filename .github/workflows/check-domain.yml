@@ -61,7 +61,11 @@ jobs:
                 cname: resp.data.cname,
                 https_enforced: resp.data.https_enforced,
                 html_url: resp.data.html_url,
-                status: resp.data.status
+                status: resp.data.status,
+                https_certificate: resp.data.https_certificate || null,
+                pending_domain_unverified_at: resp.data.pending_domain_unverified_at || null,
+                public: resp.data.public,
+                build_type: resp.data.build_type
               };
             } catch (e) {
               pages = { error: String(e) };
@@ -75,8 +79,17 @@ jobs:
                 });
                 https[hostname] = { http_status: response.status, final_url: response.url };
               } catch(e) {
-                https[hostname] = { error: String(e) };
+                https[hostname] = { error: String(e), cause: e.cause ? {code:e.cause.code, message:e.cause.message} : undefined };
               }
+            }
+            let http = {};
+            for (const hostname of [apex, 'www.' + apex]) {
+              try {
+                const response = await fetch('http://' + hostname + '/', {
+                  redirect: 'manual', signal: AbortSignal.timeout(12000)
+                });
+                http[hostname] = { status: response.status, location: response.headers.get('location') };
+              } catch(e) { http[hostname] = { error: String(e), cause: e.cause?.code || null }; }
             }
             const expected = new Set(expectedA);
             const actual = new Set(ipv4.answers);
@@ -90,6 +103,13 @@ jobs:
               dns_www_correct: cname.answers.some(a => (a.endsWith('.') ? a.slice(0, -1) : a).toLowerCase() === 'rustamovaf46-max.github.io'),
               github_pages: pages,
               google_ns: await resolveDns(apex, 'NS'),
+              google_caa: await (async () => {
+                try {
+                  const r = await fetch('https://dns.google/resolve?name=' + apex + '&type=CAA', { signal: AbortSignal.timeout(12000) });
+                  const obj = await r.json();
+                  return {status: obj.Status, answers: (obj.Answer || []).map(x => x.data)};
+                } catch(e) { return {error:String(e)}; }
+              })(),
               registry_whois: await (async () => {
                 const net = require('node:net');
                 return await new Promise(resolve => {
@@ -134,7 +154,8 @@ jobs:
                   return { status:data.Status, answers:(data.Answer||[]).map(v=>v.data), authority:(data.Authority||[]).map(v=>v.data) };
                 } catch(e) { return {error:String(e)}; }
               })(),
-              https
+              https,
+              http
             };
             // Включать HTTPS только после успешной проверки DNS домена.
             status.https_activation = { attempted: false };
