@@ -1,0 +1,75 @@
+name: Синхронизация сайта Рустамовой
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sync-site.yml'
+permissions:
+  contents: write
+jobs:
+  import-site:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Скачать готовые публичные файлы с действующего Wix
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE="https://headless-janhdkqspkh-rustamovaf46-140c.wix-site-host.com"
+          files=(
+            index.html
+            poryadok-polzovaniya-kvartiroy.html
+            privacy-policy.html
+            robots.txt
+            sitemap.xml
+            googled3be2855f213bfb7.html
+            assets/fatima-promo.mp4
+            assets/video-poster.webp
+            assets/favicon.svg
+            assets/hero-mobile.webp
+            assets/hero-handshake.webp
+            assets/fatima-portrait.webp
+          )
+          for f in "${files[@]}"; do
+            mkdir -p "$(dirname "$f")"
+            curl --fail --location --retry 4 --retry-delay 2 --silent --show-error "$BASE/$f" -o "$f"
+            test -s "$f"
+            echo "Получено: $f"
+          done
+      - name: Перевести SEO-адреса на юриструстамова.рф
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from urllib.parse import urlparse
+          old = "https://headless-janhdkqspkh-rustamovaf46-140c.wix-site-host.com"
+          new = "https://xn--80aafwvmkbibjcl2m.xn--p1ai"
+          for f in ["index.html", "poryadok-polzovaniya-kvartiroy.html",
+                    "privacy-policy.html", "robots.txt", "sitemap.xml"]:
+              p = Path(f)
+              contents = p.read_text(encoding="utf-8")
+              contents = contents.replace(old, new)
+              p.write_text(contents, encoding="utf-8")
+          for f in ("index.html","robots.txt","sitemap.xml"):
+              assert new in Path(f).read_text(encoding="utf-8"), f
+          PY
+          cat > netlify.toml <<'EOF'
+          [build]
+            publish = "."
+          EOF
+          echo 'Готово: Netlify может опубликовать корень репозитория без сборки.'
+      - name: Сохранить готовый сайт в GitHub
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Zeus site automation"
+          git config user.email "41898247+github-actions[bot]@users.noreply.github.com"
+          git add index.html poryadok-polzovaniya-kvartiroy.html privacy-policy.html robots.txt sitemap.xml googled3be2855f213bfb7.html assets netlify.toml
+          if git diff --cached --quiet; then
+            echo "Изменений нет"
+          else
+            git commit -m "Publish verified legal website snapshot"
+            git push origin HEAD:main
+          fi
