@@ -101,7 +101,7 @@ jobs:
                   sock.on('data', chunk => { raw += chunk.toString('utf8'); if(raw.length>32000) sock.end(); });
                   sock.on('end', () => {
                     const publicLines = raw.split(/\\r?\\n/).filter(line => /^(domain|nserver|state|registrar|created|paid-till|free-date|source):/i.test(line));
-                    done({lines:publicLines, has_data:raw.length>0, unregistered:/not found|no entries found|not registered|не зарегистрирован/i.test(raw)});
+                    done({lines:publicLines, has_data:raw.length>0, unregistered:/not found|no entries found|not registered|не зарегистрирован/i.test(raw), public_not_found_message: /not found|no entries found|not registered|не зарегистрирован/i.test(raw) ? raw.trim().slice(0,300) : undefined});
                   });
                   sock.on('timeout', () => done({error:'TCP Whois timeout'}));
                   sock.on('error', e => done({error:String(e)}));
