@@ -1,0 +1,36 @@
+name: Проверка REG.RU до переноса DNS
+
+on:
+  push:
+    branches: [reg-hosting-preflight]
+    paths:
+      - scripts/check-reg-hosting.py
+      - .github/workflows/check-reg-hosting.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reg-hosting-preflight
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Получить существующие исходники
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Проверить источники, новый IP, DNS и публичный сайт
+        run: python3 scripts/check-reg-hosting.py
+      - name: Сохранить фактическую диагностику
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reg-hosting-preflight
+          path: ${{ runner.temp }}/reg-hosting-preflight.json
+          if-no-files-found: ignore
+          retention-days: 7
