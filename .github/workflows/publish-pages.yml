@@ -1,16 +1,8 @@
 name: Публикация сайта бесплатно (GitHub Pages)
-# Повторный запуск после выбора GitHub Actions в настройках Pages
+# Резервный ручной запуск. Основной HTTPS-сайт публикуется через Netlify.
+# GitHub Pages больше не запускается на каждый push, чтобы избежать двойных публикаций.
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '**/*.html'
-      - 'assets/**'
-      - 'sitemap.xml'
-      - 'robots.txt'
-      - 'scripts/prepare-pages.py'
-      - '.github/workflows/publish-pages.yml'
   workflow_dispatch:
 
 permissions:
