@@ -1,13 +1,13 @@
 {
-  "checked_at": "2026-10-12T07:39:41.967Z",
+  "checked_at": "2026-10-12T08:21:48.979Z",
   "domain": "xn--80aafwvmkbibjcl2m.xn--p1ai",
   "apex_a": {
     "status": 0,
     "answers": [
-      "185.199.108.153",
+      "185.199.110.153",
       "185.199.111.153",
       "185.199.109.153",
-      "185.199.110.153"
+      "185.199.108.153"
     ]
   },
   "apex_aaaa": {
@@ -26,9 +26,17 @@
     "cname": "xn--80aafwvmkbibjcl2m.xn--p1ai",
     "https_enforced": false,
     "html_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/",
-    "status": null
+    "status": null,
+    "https_certificate": null,
+    "pending_domain_unverified_at": null,
+    "public": true,
+    "build_type": "workflow"
   },
   "google_ns": {
+    "status": 0,
+    "answers": []
+  },
+  "google_caa": {
     "status": 0,
     "answers": []
   },
@@ -36,7 +44,7 @@
     "lines": [],
     "has_data": true,
     "unregistered": true,
-    "public_not_found_message": "% TCI Whois Service. Terms of use:\n% https://tcinet.ru/documents/whois_ru_rf.pdf (in Russian)\n% https://tcinet.ru/documents/whois_su.pdf (in Russian)\n\nNo entries found for the selected source(s).\n\nLast updated on 2026-10-12T07:38:01Z"
+    "public_not_found_message": "% TCI Whois Service. Terms of use:\n% https://tcinet.ru/documents/whois_ru_rf.pdf (in Russian)\n% https://tcinet.ru/documents/whois_su.pdf (in Russian)\n\nNo entries found for the selected source(s).\n\nLast updated on 2026-10-12T08:18:01Z"
   },
   "registry_rdap": {
     "error": "TypeError: fetch failed"
@@ -53,10 +61,28 @@
   },
   "https": {
     "xn--80aafwvmkbibjcl2m.xn--p1ai": {
-      "error": "TypeError: fetch failed"
+      "error": "TypeError: fetch failed",
+      "cause": {
+        "code": "ERR_TLS_CERT_ALTNAME_INVALID",
+        "message": "Hostname/IP does not match certificate's altnames: Host: xn--80aafwvmkbibjcl2m.xn--p1ai. is not in the cert's altnames: DNS:*.github.com, DNS:*.github.io, DNS:*.githubusercontent.com, DNS:github.com, DNS:github.io, DNS:githubusercontent.com"
+      }
     },
     "www.xn--80aafwvmkbibjcl2m.xn--p1ai": {
-      "error": "TypeError: fetch failed"
+      "error": "TypeError: fetch failed",
+      "cause": {
+        "code": "ERR_TLS_CERT_ALTNAME_INVALID",
+        "message": "Hostname/IP does not match certificate's altnames: Host: www.xn--80aafwvmkbibjcl2m.xn--p1ai. is not in the cert's altnames: DNS:*.github.com, DNS:*.github.io, DNS:*.githubusercontent.com, DNS:github.com, DNS:github.io, DNS:githubusercontent.com"
+      }
+    }
+  },
+  "http": {
+    "xn--80aafwvmkbibjcl2m.xn--p1ai": {
+      "status": 200,
+      "location": null
+    },
+    "www.xn--80aafwvmkbibjcl2m.xn--p1ai": {
+      "status": 301,
+      "location": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/"
     }
   },
   "https_activation": {
