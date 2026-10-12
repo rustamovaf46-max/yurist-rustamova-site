@@ -1,0 +1,30 @@
+name: Диагностика SSL юриструстамова.рф
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/check-public-ssl.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Проверить публичный SSL-сертификат для основного и www адресов
+        run: |
+          set +e
+          for host in xn--80aafwvmkbibjcl2m.xn--p1ai www.xn--80aafwvmkbibjcl2m.xn--p1ai prismatic-pony-7528de.netlify.app; do
+            echo "::group::TLS $host"
+            echo "Google DNS:"
+            dig +short @8.8.8.8 "$host" A
+            echo "Cloudflare DNS:"
+            dig +short @1.1.1.1 "$host" A
+            echo "TLS handshake with SNI / certificate chain check:"
+            timeout 15 openssl s_client -connect "$host:443" -servername "$host" -verify_hostname "$host" -verify_return_error < /dev/null 2>&1 | grep -E 'Verification:|Verify return code:|verify error:|subject=|issuer=|CONNECTED|error|connect:'
+            echo "Certificate details:"
+            timeout 15 openssl s_client -connect "$host:443" -servername "$host" -showcerts </dev/null 2>/dev/null | openssl x509 -noout -subject -issuer -dates -ext subjectAltName
+            echo "HTTPS:"
+            curl -sSIL --connect-timeout 8 --max-time 18 -o /dev/null -w 'code=%{http_code} final_url=%{url_effective} ssl_verify_result=%{ssl_verify_result} remote_ip=%{remote_ip}\n' "https://$host/" || echo "HTTPS FAIL: $host"
+            echo "::endgroup::"
+          done
