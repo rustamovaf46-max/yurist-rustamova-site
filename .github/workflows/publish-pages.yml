@@ -1,4 +1,5 @@
 name: Публикация сайта бесплатно (GitHub Pages)
+# Повторный запуск после выбора GitHub Actions в настройках Pages
 
 on:
   push:
