@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-10-12T01:50:57.742Z",
+  "checked_at": "2026-10-12T01:55:43.375Z",
   "domain": "xn--80aafwvmkbibjcl2m.xn--p1ai",
   "apex_a": {
     "status": 3,
@@ -24,6 +24,9 @@
   "google_ns": {
     "status": 3,
     "answers": []
+  },
+  "registry_rdap": {
+    "error": "TypeError: fetch failed"
   },
   "cloudflare_a": {
     "status": 3,
