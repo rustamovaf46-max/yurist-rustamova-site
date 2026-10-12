@@ -1,19 +1,28 @@
-name: Синхронизация сайта Рустамовой
+name: Синхронизация юридического сайта
+
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '23 5 * * *'
   push:
     branches: [main]
     paths:
       - '.github/workflows/sync-site.yml'
+
 permissions:
   contents: write
+
+concurrency:
+  group: rustamova-site-sync
+  cancel-in-progress: false
+
 jobs:
   import-site:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Скачать готовые публичные файлы с действующего Wix
+      - name: Скачать публичные файлы сайта Wix
         shell: bash
         run: |
           set -euo pipefail
@@ -22,8 +31,6 @@ jobs:
             index.html
             poryadok-polzovaniya-kvartiroy.html
             privacy-policy.html
-            robots.txt
-            sitemap.xml
             googled3be2855f213bfb7.html
             assets/fatima-promo.mp4
             assets/video-poster.webp
@@ -34,42 +41,82 @@ jobs:
           )
           for f in "${files[@]}"; do
             mkdir -p "$(dirname "$f")"
-            curl --fail --location --retry 4 --retry-delay 2 --silent --show-error "$BASE/$f" -o "$f"
+            curl --fail --location --retry 3 --retry-delay 3 --silent --show-error "$BASE/$f" -o "$f"
             test -s "$f"
-            echo "Получено: $f"
           done
-      - name: Перевести SEO-адреса на юриструстамова.рф
+      - name: Найти опубликованные статьи и обновить SEO
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          from urllib.parse import urlparse
+          from urllib.request import urlopen
+          from urllib.parse import urlparse, unquote
+          import re
+          import xml.etree.ElementTree as ET
+          from xml.sax.saxutils import escape
           old = "https://headless-janhdkqspkh-rustamovaf46-140c.wix-site-host.com"
-          new = "https://xn--80aafwvmkbibjcl2m.xn--p1ai"
-          for f in ["index.html", "poryadok-polzovaniya-kvartiroy.html",
-                    "privacy-policy.html", "robots.txt", "sitemap.xml"]:
-              p = Path(f)
-              contents = p.read_text(encoding="utf-8")
-              contents = contents.replace(old, new)
-              p.write_text(contents, encoding="utf-8")
-          for f in ("index.html","robots.txt","sitemap.xml"):
-              assert new in Path(f).read_text(encoding="utf-8"), f
+          domain = "https://xn--80aafwvmkbibjcl2m.xn--p1ai"
+          # Дополнительные опубликованные статьи из sitemap Wix (если они есть)
+          try:
+              with urlopen(old + "/pages-sitemap.xml", timeout=20) as res:
+                  root = ET.fromstring(res.read())
+              urls = [el.text for el in root.iter() if el.tag.endswith("loc") and el.text]
+          except Exception as exc:
+              print("Карта статей Wix недоступна:", exc)
+              urls = []
+          for url in urls[:40]:
+              u = urlparse(url)
+              name = unquote(u.path.lstrip("/"))
+              if u.netloc != urlparse(old).netloc:
+                  continue
+              if not re.fullmatch(r"[a-z0-9][a-z0-9/_-]*\.html", name):
+                  continue
+              if name.startswith("assets/") or name.startswith("google"):
+                  continue
+              try:
+                  with urlopen(url, timeout=20) as res:
+                      payload = res.read()
+                  if not payload.lstrip().lower().startswith((b"<!doctype html",b"<html")):
+                      continue
+                  p = Path(name)
+                  p.parent.mkdir(parents=True, exist_ok=True)
+                  p.write_bytes(payload)
+              except Exception as exc:
+                  print("Не удалось получить статью:", name, exc)
+          # Обновить канонические адреса на новом домене.
+          pages = sorted(Path(".").rglob("*.html"))
+          for p in pages:
+              if ".git" in p.parts or p.name.startswith("googled3be"):
+                  continue
+              text = p.read_text(encoding="utf-8")
+              text = text.replace(old, domain)
+              p.write_text(text, encoding="utf-8")
+          published = [p for p in pages if p.name != "index.html" and
+                       not p.name.startswith("googled3be") and ".git" not in p.parts]
+          locations = [domain + "/"] + [domain + "/" + p.as_posix() for p in published]
+          sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n' + (
+              '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+              "".join(f"  <url><loc>{escape(loc)}</loc></url>\n" for loc in locations) +
+              "</urlset>\n"
+          )
+          Path("sitemap.xml").write_text(sitemap, encoding="utf-8")
+          Path("robots.txt").write_text(
+              "User-agent: *\nAllow: /\nSitemap: " + domain + "/sitemap.xml\n",
+              encoding="utf-8")
+          Path("netlify.toml").write_text('[build]\n  publish = "."\n', encoding="utf-8")
+          assert domain in Path("index.html").read_text(encoding="utf-8")
+          print(f"Готово: {len(locations)} страниц в sitemap")
           PY
-          cat > netlify.toml <<'EOF'
-          [build]
-            publish = "."
-          EOF
-          echo 'Готово: Netlify может опубликовать корень репозитория без сборки.'
-      - name: Сохранить готовый сайт в GitHub
+      - name: Сохранить сайт в GitHub
         shell: bash
         run: |
           set -euo pipefail
           git config user.name "Zeus site automation"
           git config user.email "41898247+github-actions[bot]@users.noreply.github.com"
-          git add index.html poryadok-polzovaniya-kvartiroy.html privacy-policy.html robots.txt sitemap.xml googled3be2855f213bfb7.html assets netlify.toml
+          git add -A -- '*.html' '*.txt' '*.xml' 'assets/*' 'netlify.toml'
           if git diff --cached --quiet; then
             echo "Изменений нет"
           else
-            git commit -m "Publish verified legal website snapshot"
+            git commit -m "Синхронизация страниц сайта"
             git push origin HEAD:main
           fi
