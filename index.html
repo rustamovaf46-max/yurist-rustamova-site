@@ -11,6 +11,7 @@
 <script>
 /* Avoid the browser restoring a previous scroll position on a new visit. */
 try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (e) {}
+if (!window.location.hash) window.scrollTo(0, 0);
 </script>
 <link href="https://xn--80aafwvmkbibjcl2m.xn--p1ai/" rel="canonical"/>
 <meta content="index, follow, max-image-preview:large" name="robots"/>
@@ -156,6 +157,26 @@ try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; 
   .brand small{font-size:7px;letter-spacing:1px}
   .header-content{gap:8px}
   .menu-toggle{padding:6px}
+}
+
+/* Mobile typography and stable opening position, checked at 280–430px. */
+html{scroll-behavior:auto;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+@media(max-width:700px){
+  .hero-grid,.hero-copy,.section-heading,.video-layout,.video-copy,
+  .video-player-frame,.price-grid,.price-panel,.contact-grid,.contact-card,
+  .service-card,.service-dialog-inner{min-width:0;max-width:100%}
+  .hero h1{font-size:clamp(47px,12.5vw,76px);letter-spacing:-.025em;overflow-wrap:break-word}
+  .hero-subtitle{font-size:clamp(22px,6vw,28px);overflow-wrap:break-word}
+  .section h2{font-size:clamp(30px,9.2vw,42px);line-height:1.16;overflow-wrap:break-word}
+  .section-video h2{font-size:clamp(30px,8.8vw,37px)}
+  .contact-card h2{font-size:clamp(29px,8.8vw,40px)}
+  .service-card h3,.price-panel h3,.price-panel p,.contact-line strong,
+  .contact-card p,.service-dialog h2,.service-dialog p,.service-dialog li,
+  .hero-actions .btn,.floating-contact a{overflow-wrap:anywhere}
+  .price-amount{font-size:clamp(38px,11.5vw,62px);white-space:normal}
+  .price-amount small{font-size:clamp(16px,4.5vw,23px)}
+  .price-amount span{font-size:clamp(24px,8vw,34px)}
+  .floating-contact a{min-width:0}
 }
 </style>
 </head>
@@ -315,42 +336,7 @@ try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; 
     const playResult=v.play();if(playResult&&typeof playResult.catch==='function'){playResult.catch(()=>{});}
   },{once:true});}
 })();</script>
-<script>
-/* On a fresh visit, the landing page starts from its first screen.
-   Internal navigation links work as usual after a visitor interacts. */
-(function () {
-  let interacted = false;
-  function cancelReset() { interacted = true; }
-  for (const type of ['pointerdown', 'touchstart', 'wheel', 'keydown']) {
-    document.addEventListener(type, cancelReset, { once: true, passive: true });
-  }
-  function resetToStart() {
-    if (interacted || window.location.hash) return;
-    const html = document.documentElement;
-    const previous = html.style.scrollBehavior;
-    html.style.scrollBehavior = 'auto';
-    window.scrollTo(0, 0);
-    html.style.scrollBehavior = previous;
-  }
-  window.addEventListener('pageshow', function () {
-    resetToStart();
-    requestAnimationFrame(resetToStart);
-    setTimeout(resetToStart, 100);
-  });
-  window.addEventListener('load', function () {
-    resetToStart();
-    requestAnimationFrame(resetToStart);
-    setTimeout(resetToStart, 180);
-    setTimeout(resetToStart, 500);
-  });
-  // Some mobile browsers restore a fragment or scroll after first paint.
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', resetToStart, { once: true });
-  } else {
-    resetToStart();
-  }
-})();
-</script>
+
 <script>
 (function(){
   const details={
