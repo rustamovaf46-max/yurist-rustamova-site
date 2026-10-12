@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-10-12T01:49:54.427Z",
+  "checked_at": "2026-10-12T01:50:57.742Z",
   "domain": "xn--80aafwvmkbibjcl2m.xn--p1ai",
   "apex_a": {
     "status": 3,
@@ -20,6 +20,17 @@
     "https_enforced": false,
     "html_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/",
     "status": null
+  },
+  "google_ns": {
+    "status": 3,
+    "answers": []
+  },
+  "cloudflare_a": {
+    "status": 3,
+    "answers": [],
+    "authority": [
+      "a.dns.ripn.net. hostmaster.ripn.net. 650210873 86400 14400 2592000 3600"
+    ]
   },
   "https": {
     "xn--80aafwvmkbibjcl2m.xn--p1ai": {
