@@ -1,13 +1,7 @@
-name: Синхронизация юридического сайта
+name: Импорт сайта Wix (только вручную; не перезаписывать SEO)
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '23 5 * * *'
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/sync-site.yml'
 
 permissions:
   contents: write
