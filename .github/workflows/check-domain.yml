@@ -42,7 +42,7 @@ jobs:
                 const result = await response.json();
                 return {
                   status: result.Status,
-                  answers: (result.Answer || []).filter(a => a.type === (type === 'A' ? 1 : type === 'CNAME' ? 5 : 28))
+                  answers: (result.Answer || []).filter(a => a.type === ({ A: 1, NS: 2, CNAME: 5, AAAA: 28, CAA: 257 })[type])
                     .map(a => a.data)
                 };
               } catch (e) {
@@ -134,13 +134,7 @@ jobs:
               dns_www_correct: cname.answers.some(a => (a.endsWith('.') ? a.slice(0, -1) : a).toLowerCase() === 'rustamovaf46-max.github.io'),
               github_pages: pages,
               google_ns: await resolveDns(apex, 'NS'),
-              google_caa: await (async () => {
-                try {
-                  const r = await fetch('https://dns.google/resolve?name=' + apex + '&type=CAA', { signal: AbortSignal.timeout(12000) });
-                  const obj = await r.json();
-                  return {status: obj.Status, answers: (obj.Answer || []).map(x => x.data)};
-                } catch(e) { return {error:String(e)}; }
-              })(),
+              google_caa: await resolveDns(apex, 'CAA'),
               registry_whois: await (async () => {
                 const net = require('node:net');
                 return await new Promise(resolve => {
@@ -149,10 +143,10 @@ jobs:
                   let settled = false;
                   const done = data => { if(!settled) { settled=true; sock.destroy(); resolve(data); } };
                   sock.setTimeout(12000);
-                  sock.on('connect', () => sock.write(apex + '\\r\\n'));
+                  sock.on('connect', () => sock.write(apex + '\r\n'));
                   sock.on('data', chunk => { raw += chunk.toString('utf8'); if(raw.length>32000) sock.end(); });
                   sock.on('end', () => {
-                    const publicLines = raw.split(/\\r?\\n/).filter(line => /^(domain|nserver|state|registrar|created|paid-till|free-date|source):/i.test(line));
+                    const publicLines = raw.split(/\r?\n/).filter(line => /^(domain|nserver|state|registrar|created|paid-till|free-date|source):/i.test(line));
                     done({lines:publicLines, has_data:raw.length>0, unregistered:/not found|no entries found|not registered|не зарегистрирован/i.test(raw), public_not_found_message: /not found|no entries found|not registered|не зарегистрирован/i.test(raw) ? raw.trim().slice(0,300) : undefined});
                   });
                   sock.on('timeout', () => done({error:'TCP Whois timeout'}));
@@ -189,10 +183,19 @@ jobs:
               http,
               content_checks: content
             };
-            // Включать HTTPS только после успешной проверки DNS домена.
-            status.https_activation = { attempted: false };
+            // Сначала проверить настоящий TLS-сертификат обоих настроенных адресов.
+            status.https_ready = [apex, 'www.' + apex].every(hostname =>
+              https[hostname]?.http_status === 200
+            );
+            status.https_activation = {
+              attempted: false,
+              result: pages.https_enforced === true ? 'already_enforced'
+                : status.https_ready ? 'waiting_for_valid_dns_and_pages'
+                : 'certificate_not_ready'
+            };
             if (status.dns_apex_correct && status.dns_www_correct
-                && pages.cname === apex && pages.https_enforced === false) {
+                && pages.cname === apex && pages.https_enforced === false
+                && status.https_ready) {
               status.https_activation.attempted = true;
               try {
                 await github.request('PUT /repos/{owner}/{repo}/pages', {
@@ -201,8 +204,10 @@ jobs:
                 status.https_activation.result = 'request_accepted';
                 status.github_pages.https_enforced = true;
               } catch(e) {
-                status.https_activation.result = 'not_yet_available_or_permission_denied';
+                status.https_activation.result = e.status === 403
+                  ? 'permission_denied' : 'request_failed';
                 status.https_activation.http_status = e.status || null;
+                status.https_activation.message = e.message || String(e);
               }
             }
             const path = 'domain-status.json';

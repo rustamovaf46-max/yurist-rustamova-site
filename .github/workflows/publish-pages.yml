@@ -9,6 +9,7 @@ on:
       - 'assets/**'
       - 'sitemap.xml'
       - 'robots.txt'
+      - 'scripts/prepare-pages.py'
       - '.github/workflows/publish-pages.yml'
   workflow_dispatch:
 
@@ -44,10 +45,12 @@ jobs:
           echo 'DNS проверен через отдельный мониторинг; повторная публикация запущена для проверки сертификата GitHub Pages.'
       - name: Настроить GitHub Pages
         uses: actions/configure-pages@v5
+      - name: Подготовить только публичные файлы сайта
+        run: python3 scripts/prepare-pages.py
       - name: Создать пакет публикации
         uses: actions/upload-pages-artifact@v4
         with:
-          path: .
+          path: _site
       - name: Опубликовать сайт
         id: deployment
         uses: actions/deploy-pages@v4
