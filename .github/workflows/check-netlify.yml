@@ -59,7 +59,8 @@ jobs:
                   result.title = body.match(/<title>([^<]*)<\/title>/)?.[1] || '';
                   result.has_layout_fix = body.includes('Correction of video/pricing overflow');
                   result.no_obsolete_wix_script = !body.includes('wix-site-script');
-                  result.has_scroll_fix = body.includes('setTimeout(resetToStart, 500)');
+                  result.has_scroll_fix = body.includes('Mobile typography and stable opening position') &&
+                    !body.includes('setTimeout(resetToStart');
                   result.ok = result.ok && result.has_rustamova &&
                     result.has_phone && result.has_max &&
                     result.has_layout_fix && result.no_obsolete_wix_script &&
