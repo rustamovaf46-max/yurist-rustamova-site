@@ -173,6 +173,46 @@ html{scroll-behavior:auto;-webkit-text-size-adjust:100%;text-size-adjust:100%}
   .price-amount span{font-size:clamp(24px,8vw,34px)}
   .floating-contact a{min-width:0}
 }
+
+/* Mobile price section: fit the long Russian heading and the full price card. */
+@media(max-width:700px){
+  .section-price .price-grid{grid-template-columns:minmax(0,1fr);width:100%}
+  .section-price .price-grid>div{min-width:0;max-width:100%;box-sizing:border-box}
+  .section-price h2{
+    font-size:clamp(25px,7vw,34px);
+    line-height:1.2;
+    letter-spacing:-.025em;
+    overflow-wrap:anywhere;
+    word-break:normal;
+    hyphens:auto;
+  }
+  .section-price h2 em{overflow-wrap:anywhere;hyphens:auto}
+  .section-price .price-panel{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    padding:clamp(15px,4.2vw,25px);
+    box-sizing:border-box;
+  }
+  .section-price .price-amount{
+    font-size:clamp(34px,9.4vw,50px);
+    line-height:1.18;
+    white-space:normal;
+    overflow-wrap:anywhere;
+  }
+  .section-price .price-amount small{font-size:clamp(16px,4.5vw,22px)}
+  .section-price .price-amount span{font-size:clamp(22px,6vw,30px)}
+  .section-price .price-label,
+  .section-price .price-hint{overflow-wrap:anywhere}
+  .section-price .price-panel .btn{
+    max-width:100%;
+    min-width:0;
+    white-space:normal;
+    overflow-wrap:anywhere;
+    padding:14px 10px;
+    gap:8px;
+  }
+}
 </style>
 </head>
 <body>
