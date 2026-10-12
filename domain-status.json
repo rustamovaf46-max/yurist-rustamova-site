@@ -1,13 +1,13 @@
 {
-  "checked_at": "2026-10-12T08:21:48.979Z",
+  "checked_at": "2026-10-12T08:23:02.756Z",
   "domain": "xn--80aafwvmkbibjcl2m.xn--p1ai",
   "apex_a": {
     "status": 0,
     "answers": [
       "185.199.110.153",
       "185.199.111.153",
-      "185.199.109.153",
-      "185.199.108.153"
+      "185.199.108.153",
+      "185.199.109.153"
     ]
   },
   "apex_aaaa": {
@@ -83,6 +83,53 @@
     "www.xn--80aafwvmkbibjcl2m.xn--p1ai": {
       "status": 301,
       "location": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/"
+    }
+  },
+  "content_checks": {
+    "/": {
+      "http_status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "ok": true,
+      "has_rustamova": true,
+      "has_phone": true,
+      "has_max": true,
+      "has_main_legal_services": true
+    },
+    "/sitemap.xml": {
+      "http_status": 200,
+      "content_type": "application/xml",
+      "ok": true
+    },
+    "/robots.txt": {
+      "http_status": 200,
+      "content_type": "text/plain; charset=utf-8",
+      "ok": true
+    },
+    "/googled3be2855f213bfb7.html": {
+      "http_status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "ok": true,
+      "verification_correct": true
+    },
+    "/poryadok-polzovaniya-kvartiroy.html": {
+      "http_status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "ok": true
+    },
+    "/privacy-policy.html": {
+      "http_status": 200,
+      "content_type": "text/html; charset=utf-8",
+      "ok": true
+    },
+    "/assets/hero-handshake.webp": {
+      "http_status": 200,
+      "content_type": "image/webp",
+      "ok": true
+    },
+    "/assets/fatima-portrait.webp": {
+      "http_status": 200,
+      "content_type": "image/webp",
+      "ok": true
     }
   },
   "https_activation": {
