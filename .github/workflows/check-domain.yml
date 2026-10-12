@@ -7,10 +7,11 @@ on:
     paths:
       - '.github/workflows/check-domain.yml'
   schedule:
-    - cron: '17 */6 * * *'
+    - cron: '17 * * * *'
 
 permissions:
   contents: write
+  pages: write
 
 concurrency:
   group: rustamova-domain-status
@@ -135,6 +136,22 @@ jobs:
               })(),
               https
             };
+            // Включать HTTPS только после успешной проверки DNS домена.
+            status.https_activation = { attempted: false };
+            if (status.dns_apex_correct && status.dns_www_correct
+                && pages.cname === apex && pages.https_enforced === false) {
+              status.https_activation.attempted = true;
+              try {
+                await github.request('PUT /repos/{owner}/{repo}/pages', {
+                  owner, repo, https_enforced: true
+                });
+                status.https_activation.result = 'request_accepted';
+                status.github_pages.https_enforced = true;
+              } catch(e) {
+                status.https_activation.result = 'not_yet_available_or_permission_denied';
+                status.https_activation.http_status = e.status || null;
+              }
+            }
             const path = 'domain-status.json';
             let sha;
             try {
