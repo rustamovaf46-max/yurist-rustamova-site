@@ -1,11 +1,11 @@
 {
-  "checked_at": "2026-10-12T04:36:42.950Z",
+  "checked_at": "2026-10-12T05:35:07.332Z",
   "domain": "xn--80aafwvmkbibjcl2m.xn--p1ai",
   "apex_a": {
     "status": 0,
     "answers": [
-      "185.199.109.153",
       "185.199.110.153",
+      "185.199.109.153",
       "185.199.108.153",
       "185.199.111.153"
     ]
@@ -36,7 +36,7 @@
     "lines": [],
     "has_data": true,
     "unregistered": true,
-    "public_not_found_message": "% TCI Whois Service. Terms of use:\n% https://tcinet.ru/documents/whois_ru_rf.pdf (in Russian)\n% https://tcinet.ru/documents/whois_su.pdf (in Russian)\n\nNo entries found for the selected source(s).\n\nLast updated on 2026-10-12T04:33:01Z"
+    "public_not_found_message": "% TCI Whois Service. Terms of use:\n% https://tcinet.ru/documents/whois_ru_rf.pdf (in Russian)\n% https://tcinet.ru/documents/whois_su.pdf (in Russian)\n\nNo entries found for the selected source(s).\n\nLast updated on 2026-10-12T05:33:01Z"
   },
   "registry_rdap": {
     "error": "TypeError: fetch failed"
