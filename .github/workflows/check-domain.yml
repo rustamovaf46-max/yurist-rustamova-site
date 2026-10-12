@@ -42,7 +42,7 @@ jobs:
                 const result = await response.json();
                 return {
                   status: result.Status,
-                  answers: (result.Answer || []).filter(a => a.type === (type === 'A' ? 1 : type === 'CNAME' ? 5 : 28))
+                  answers: (result.Answer || []).filter(a => a.type === ({ A: 1, NS: 2, CNAME: 5, AAAA: 28, CAA: 257 })[type])
                     .map(a => a.data)
                 };
               } catch (e) {
@@ -61,7 +61,11 @@ jobs:
                 cname: resp.data.cname,
                 https_enforced: resp.data.https_enforced,
                 html_url: resp.data.html_url,
-                status: resp.data.status
+                status: resp.data.status,
+                https_certificate: resp.data.https_certificate || null,
+                pending_domain_unverified_at: resp.data.pending_domain_unverified_at || null,
+                public: resp.data.public,
+                build_type: resp.data.build_type
               };
             } catch (e) {
               pages = { error: String(e) };
@@ -75,7 +79,47 @@ jobs:
                 });
                 https[hostname] = { http_status: response.status, final_url: response.url };
               } catch(e) {
-                https[hostname] = { error: String(e) };
+                https[hostname] = { error: String(e), cause: e.cause ? {code:e.cause.code, message:e.cause.message} : undefined };
+              }
+            }
+            let http = {};
+            for (const hostname of [apex, 'www.' + apex]) {
+              try {
+                const response = await fetch('http://' + hostname + '/', {
+                  redirect: 'manual', signal: AbortSignal.timeout(12000)
+                });
+                http[hostname] = { status: response.status, location: response.headers.get('location') };
+              } catch(e) { http[hostname] = { error: String(e), cause: e.cause?.code || null }; }
+            }
+            const content = {};
+            for (const route of ['/', '/sitemap.xml', '/robots.txt',
+                                 '/googled3be2855f213bfb7.html',
+                                 '/poryadok-polzovaniya-kvartiroy.html',
+                                 '/privacy-policy.html', '/assets/hero-handshake.webp',
+                                 '/assets/fatima-portrait.webp']) {
+              try {
+                const r = await fetch('http://' + apex + route, {
+                  redirect: 'follow', signal: AbortSignal.timeout(15000)
+                });
+                const type = r.headers.get('content-type') || '';
+                let ok = r.ok;
+                const flags = {};
+                if (route === '/') {
+                  const body = await r.text();
+                  flags.has_rustamova = body.includes('Рустамова');
+                  flags.has_phone = body.includes('79099282398');
+                  flags.has_max = body.includes('max.ru');
+                  flags.has_main_legal_services = body.includes('Жилищн') || body.includes('жилищн');
+                  ok = ok && flags.has_rustamova && flags.has_phone;
+                }
+                if (route === '/googled3be2855f213bfb7.html') {
+                  const body = await r.text();
+                  flags.verification_correct = body.includes('google-site-verification: googled3be2855f213bfb7.html');
+                  ok = ok && flags.verification_correct;
+                }
+                content[route] = {http_status:r.status, content_type:type, ok, ...flags};
+              } catch(e) {
+                content[route] = {ok:false, error:String(e), cause:e.cause?.code||null};
               }
             }
             const expected = new Set(expectedA);
@@ -90,6 +134,7 @@ jobs:
               dns_www_correct: cname.answers.some(a => (a.endsWith('.') ? a.slice(0, -1) : a).toLowerCase() === 'rustamovaf46-max.github.io'),
               github_pages: pages,
               google_ns: await resolveDns(apex, 'NS'),
+              google_caa: await resolveDns(apex, 'CAA'),
               registry_whois: await (async () => {
                 const net = require('node:net');
                 return await new Promise(resolve => {
@@ -98,10 +143,10 @@ jobs:
                   let settled = false;
                   const done = data => { if(!settled) { settled=true; sock.destroy(); resolve(data); } };
                   sock.setTimeout(12000);
-                  sock.on('connect', () => sock.write(apex + '\\r\\n'));
+                  sock.on('connect', () => sock.write(apex + '\r\n'));
                   sock.on('data', chunk => { raw += chunk.toString('utf8'); if(raw.length>32000) sock.end(); });
                   sock.on('end', () => {
-                    const publicLines = raw.split(/\\r?\\n/).filter(line => /^(domain|nserver|state|registrar|created|paid-till|free-date|source):/i.test(line));
+                    const publicLines = raw.split(/\r?\n/).filter(line => /^(domain|nserver|state|registrar|created|paid-till|free-date|source):/i.test(line));
                     done({lines:publicLines, has_data:raw.length>0, unregistered:/not found|no entries found|not registered|не зарегистрирован/i.test(raw), public_not_found_message: /not found|no entries found|not registered|не зарегистрирован/i.test(raw) ? raw.trim().slice(0,300) : undefined});
                   });
                   sock.on('timeout', () => done({error:'TCP Whois timeout'}));
@@ -134,12 +179,23 @@ jobs:
                   return { status:data.Status, answers:(data.Answer||[]).map(v=>v.data), authority:(data.Authority||[]).map(v=>v.data) };
                 } catch(e) { return {error:String(e)}; }
               })(),
-              https
+              https,
+              http,
+              content_checks: content
             };
-            // Включать HTTPS только после успешной проверки DNS домена.
-            status.https_activation = { attempted: false };
+            // Сначала проверить настоящий TLS-сертификат обоих настроенных адресов.
+            status.https_ready = [apex, 'www.' + apex].every(hostname =>
+              https[hostname]?.http_status === 200
+            );
+            status.https_activation = {
+              attempted: false,
+              result: pages.https_enforced === true ? 'already_enforced'
+                : status.https_ready ? 'waiting_for_valid_dns_and_pages'
+                : 'certificate_not_ready'
+            };
             if (status.dns_apex_correct && status.dns_www_correct
-                && pages.cname === apex && pages.https_enforced === false) {
+                && pages.cname === apex && pages.https_enforced === false
+                && status.https_ready) {
               status.https_activation.attempted = true;
               try {
                 await github.request('PUT /repos/{owner}/{repo}/pages', {
@@ -148,8 +204,11 @@ jobs:
                 status.https_activation.result = 'request_accepted';
                 status.github_pages.https_enforced = true;
               } catch(e) {
-                status.https_activation.result = 'not_yet_available_or_permission_denied';
+                status.https_activation.result = e.status === 403
+                  ? 'permission_denied' : 'request_failed';
                 status.https_activation.http_status = e.status || null;
+                status.https_activation.github_message = (e.response?.data?.message || e.message || '').slice(0, 320);
+                status.https_activation.message = e.message || String(e);
               }
             }
             const path = 'domain-status.json';
