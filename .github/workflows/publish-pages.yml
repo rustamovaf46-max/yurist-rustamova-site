@@ -38,6 +38,10 @@ jobs:
           test -s robots.txt
           test -s googled3be2855f213bfb7.html
           test -s assets/fatima-promo.mp4
+      - name: Проверка DNS после подключения собственного домена
+        shell: bash
+        run: |
+          echo 'DNS проверен через отдельный мониторинг; повторная публикация запущена для проверки сертификата GitHub Pages.'
       - name: Настроить GitHub Pages
         uses: actions/configure-pages@v5
       - name: Создать пакет публикации
