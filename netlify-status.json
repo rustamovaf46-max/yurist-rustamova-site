@@ -1,0 +1,78 @@
+{
+  "checked_at": "2026-10-12T17:52:20.819Z",
+  "public_netlify_url": "https://prismatic-pony-7528de.netlify.app",
+  "all_checks_passed": true,
+  "checks": {
+    "/": {
+      "http_status": 200,
+      "final_url": "https://prismatic-pony-7528de.netlify.app/",
+      "content_type": "text/html; charset=UTF-8",
+      "ok": true,
+      "has_rustamova": true,
+      "has_phone": true,
+      "has_max": true,
+      "title": "Юрист для суда в Москве — Фатима Рустамова | Представительство"
+    },
+    "/sitemap.xml": {
+      "http_status": 200,
+      "final_url": "https://prismatic-pony-7528de.netlify.app/sitemap.xml",
+      "content_type": "application/xml",
+      "ok": true
+    },
+    "/robots.txt": {
+      "http_status": 200,
+      "final_url": "https://prismatic-pony-7528de.netlify.app/robots.txt",
+      "content_type": "text/plain; charset=UTF-8",
+      "ok": true
+    },
+    "/googled3be2855f213bfb7.html": {
+      "http_status": 200,
+      "final_url": "https://prismatic-pony-7528de.netlify.app/googled3be2855f213bfb7.html",
+      "content_type": "text/html; charset=UTF-8",
+      "ok": true,
+      "verified": true
+    },
+    "/poryadok-polzovaniya-kvartiroy.html": {
+      "http_status": 200,
+      "final_url": "https://prismatic-pony-7528de.netlify.app/poryadok-polzovaniya-kvartiroy.html",
+      "content_type": "text/html; charset=UTF-8",
+      "ok": true
+    },
+    "/privacy-policy.html": {
+      "http_status": 200,
+      "final_url": "https://prismatic-pony-7528de.netlify.app/privacy-policy.html",
+      "content_type": "text/html; charset=UTF-8",
+      "ok": true
+    },
+    "/assets/fatima-portrait.webp": {
+      "http_status": 200,
+      "final_url": "https://prismatic-pony-7528de.netlify.app/assets/fatima-portrait.webp",
+      "content_type": "image/webp",
+      "ok": true
+    },
+    "/assets/hero-handshake.webp": {
+      "http_status": 200,
+      "final_url": "https://prismatic-pony-7528de.netlify.app/assets/hero-handshake.webp",
+      "content_type": "image/webp",
+      "ok": true
+    },
+    "/assets/hero-mobile.webp": {
+      "http_status": 200,
+      "final_url": "https://prismatic-pony-7528de.netlify.app/assets/hero-mobile.webp",
+      "content_type": "image/webp",
+      "ok": true
+    },
+    "/assets/video-poster.webp": {
+      "http_status": 200,
+      "final_url": "https://prismatic-pony-7528de.netlify.app/assets/video-poster.webp",
+      "content_type": "image/webp",
+      "ok": true
+    },
+    "/assets/fatima-promo.mp4": {
+      "http_status": 200,
+      "final_url": "https://prismatic-pony-7528de.netlify.app/assets/fatima-promo.mp4",
+      "content_type": "video/mp4",
+      "ok": true
+    }
+  }
+}
