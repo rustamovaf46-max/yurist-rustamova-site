@@ -86,7 +86,7 @@ jobs:
               apex_aaaa: ipv6,
               www_cname: cname,
               dns_apex_correct: actual.size === expected.size && [...expected].every(ip => actual.has(ip)),
-              dns_www_correct: cname.answers.some(a => a.replace(/\\.$/, '').toLowerCase() === 'rustamovaf46-max.github.io'),
+              dns_www_correct: cname.answers.some(a => (a.endsWith('.') ? a.slice(0, -1) : a).toLowerCase() === 'rustamovaf46-max.github.io'),
               github_pages: pages,
               https
             };
