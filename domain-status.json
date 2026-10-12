@@ -1,0 +1,32 @@
+{
+  "checked_at": "2026-10-12T01:49:38.826Z",
+  "domain": "xn--80aafwvmkbibjcl2m.xn--p1ai",
+  "apex_a": {
+    "status": 3,
+    "answers": []
+  },
+  "apex_aaaa": {
+    "status": 3,
+    "answers": []
+  },
+  "www_cname": {
+    "status": 3,
+    "answers": []
+  },
+  "dns_apex_correct": false,
+  "dns_www_correct": false,
+  "github_pages": {
+    "cname": "xn--80aafwvmkbibjcl2m.xn--p1ai",
+    "https_enforced": false,
+    "html_url": "http://xn--80aafwvmkbibjcl2m.xn--p1ai/",
+    "status": null
+  },
+  "https": {
+    "xn--80aafwvmkbibjcl2m.xn--p1ai": {
+      "error": "TypeError: fetch failed"
+    },
+    "www.xn--80aafwvmkbibjcl2m.xn--p1ai": {
+      "error": "TypeError: fetch failed"
+    }
+  }
+}
