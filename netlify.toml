@@ -1,2 +1,4 @@
+# Static website, with unpublished SEO drafts and internal diagnostics excluded.
 [build]
-  publish = "."
+  command = "test -s index.html && test -s googled3be2855f213bfb7.html && mkdir -p netlify-public && cp ./*.html ./robots.txt ./sitemap.xml netlify-public/ && cp -R ./assets netlify-public/"
+  publish = "netlify-public"
