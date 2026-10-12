@@ -1,20 +1,27 @@
 {
-  "checked_at": "2026-10-12T01:57:52.218Z",
+  "checked_at": "2026-10-12T02:01:49.253Z",
   "domain": "xn--80aafwvmkbibjcl2m.xn--p1ai",
   "apex_a": {
-    "status": 3,
-    "answers": []
+    "status": 0,
+    "answers": [
+      "185.199.111.153",
+      "185.199.108.153",
+      "185.199.110.153",
+      "185.199.109.153"
+    ]
   },
   "apex_aaaa": {
-    "status": 3,
+    "status": 0,
     "answers": []
   },
   "www_cname": {
-    "status": 3,
-    "answers": []
+    "status": 0,
+    "answers": [
+      "rustamovaf46-max.github.io."
+    ]
   },
-  "dns_apex_correct": false,
-  "dns_www_correct": false,
+  "dns_apex_correct": true,
+  "dns_www_correct": true,
   "github_pages": {
     "cname": "xn--80aafwvmkbibjcl2m.xn--p1ai",
     "https_enforced": false,
@@ -22,24 +29,27 @@
     "status": null
   },
   "google_ns": {
-    "status": 3,
+    "status": 0,
     "answers": []
   },
   "registry_whois": {
     "lines": [],
     "has_data": true,
     "unregistered": true,
-    "public_not_found_message": "% TCI Whois Service. Terms of use:\n% https://tcinet.ru/documents/whois_ru_rf.pdf (in Russian)\n% https://tcinet.ru/documents/whois_su.pdf (in Russian)\n\nNo entries found for the selected source(s).\n\nLast updated on 2026-10-12T01:53:01Z"
+    "public_not_found_message": "% TCI Whois Service. Terms of use:\n% https://tcinet.ru/documents/whois_ru_rf.pdf (in Russian)\n% https://tcinet.ru/documents/whois_su.pdf (in Russian)\n\nNo entries found for the selected source(s).\n\nLast updated on 2026-10-12T01:58:01Z"
   },
   "registry_rdap": {
     "error": "TypeError: fetch failed"
   },
   "cloudflare_a": {
-    "status": 3,
-    "answers": [],
-    "authority": [
-      "a.dns.ripn.net. hostmaster.ripn.net. 650210873 86400 14400 2592000 3600"
-    ]
+    "status": 0,
+    "answers": [
+      "185.199.108.153",
+      "185.199.109.153",
+      "185.199.110.153",
+      "185.199.111.153"
+    ],
+    "authority": []
   },
   "https": {
     "xn--80aafwvmkbibjcl2m.xn--p1ai": {
@@ -48,5 +58,10 @@
     "www.xn--80aafwvmkbibjcl2m.xn--p1ai": {
       "error": "TypeError: fetch failed"
     }
+  },
+  "https_activation": {
+    "attempted": true,
+    "result": "not_yet_available_or_permission_denied",
+    "http_status": 403
   }
 }
