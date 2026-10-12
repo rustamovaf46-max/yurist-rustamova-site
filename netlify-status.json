@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-10-12T17:52:20.819Z",
+  "checked_at": "2026-10-12T18:03:04.967Z",
   "public_netlify_url": "https://prismatic-pony-7528de.netlify.app",
   "all_checks_passed": true,
   "checks": {
@@ -11,7 +11,10 @@
       "has_rustamova": true,
       "has_phone": true,
       "has_max": true,
-      "title": "Юрист для суда в Москве — Фатима Рустамова | Представительство"
+      "title": "Юрист для суда в Москве — Фатима Рустамова | Представительство",
+      "has_layout_fix": true,
+      "no_obsolete_wix_script": true,
+      "has_scroll_fix": true
     },
     "/sitemap.xml": {
       "http_status": 200,
