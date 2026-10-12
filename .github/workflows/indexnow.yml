@@ -1,0 +1,95 @@
+name: SEO — уведомление IndexNow после публикации
+on:
+  push:
+    branches: [main]
+    paths:
+      - sitemap.xml
+      - .github/workflows/indexnow.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: indexnow-production
+  cancel-in-progress: true
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Скачать код сайта
+        uses: actions/checkout@v4
+      - name: Дождаться подтверждения новой карты сайта на основном домене
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from urllib.request import Request, urlopen
+          from time import sleep
+          from xml.etree import ElementTree as ET
+
+          base = "https://xn--80aafwvmkbibjcl2m.xn--p1ai"
+          key = "91f7e03d63fefe7098456dca52d83d4a"
+          expected = Path("sitemap.xml").read_bytes()
+          assert ET.fromstring(expected).tag.endswith("urlset")
+          for attempt in range(1, 25):
+              try:
+                  with urlopen(Request(base + "/" + key + ".txt", headers={"User-Agent": "RustamovaIndexNow/1.0"}), timeout=15) as response:
+                      current_key = response.read().decode("utf-8").strip()
+                  with urlopen(Request(base + "/sitemap.xml", headers={"User-Agent": "RustamovaIndexNow/1.0"}), timeout=15) as response:
+                      live_sitemap = response.read()
+                  if current_key == key and live_sitemap == expected:
+                      print("Production verification key and latest sitemap are published.")
+                      break
+                  print(f"Waiting for Netlify deployment ({attempt}/24); published sitemap differs.")
+              except Exception as exc:
+                  print(f"Waiting for Netlify deployment ({attempt}/24): {type(exc).__name__}")
+              if attempt == 24:
+                  raise SystemExit("Netlify deployment not confirmed. Did not submit stale URLs.")
+              sleep(12)
+          PY
+      - name: Отправить опубликованные URL через IndexNow
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from urllib.parse import urlparse
+          from urllib.request import Request, urlopen
+          from urllib.error import HTTPError
+          from xml.etree import ElementTree as ET
+          import json
+
+          key = "91f7e03d63fefe7098456dca52d83d4a"
+          host = "xn--80aafwvmkbibjcl2m.xn--p1ai"
+          base = "https://" + host
+          root = ET.fromstring(Path("sitemap.xml").read_bytes())
+          urls = []
+          for el in root.iter():
+              if el.tag.endswith("loc") and el.text:
+                  u = el.text.strip()
+                  parsed = urlparse(u)
+                  if parsed.scheme == "https" and parsed.hostname == host and u not in urls:
+                      urls.append(u)
+          if not urls:
+              raise SystemExit("No URLs for this verified host.")
+          payload = {
+              "host": host,
+              "key": key,
+              "keyLocation": base + "/" + key + ".txt",
+              "urlList": urls[:10000],
+          }
+          request = Request("https://api.indexnow.org/indexnow",
+                            data=json.dumps(payload).encode("utf-8"),
+                            headers={"Content-Type": "application/json; charset=utf-8",
+                                     "User-Agent": "RustamovaIndexNow/1.0"},
+                            method="POST")
+          try:
+              with urlopen(request, timeout=30) as response:
+                  code = response.status
+                  print(f"IndexNow HTTP {code}; {len(urls)} URLs submitted. This is not confirmation of search indexing.")
+          except HTTPError as exc:
+              print("IndexNow request returned HTTP", exc.code)
+              raise
+          if code not in (200, 202):
+              raise SystemExit(f"Unexpected IndexNow response: {code}")
+          PY
