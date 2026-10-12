@@ -207,6 +207,7 @@ jobs:
                 status.https_activation.result = e.status === 403
                   ? 'permission_denied' : 'request_failed';
                 status.https_activation.http_status = e.status || null;
+                status.https_activation.github_message = (e.response?.data?.message || e.message || '').slice(0, 320);
                 status.https_activation.message = e.message || String(e);
               }
             }
