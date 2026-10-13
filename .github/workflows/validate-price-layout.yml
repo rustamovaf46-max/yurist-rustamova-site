@@ -53,7 +53,9 @@ jobs:
                       assert b["left"] >= -1 and b["right"] <= width+1, f"{width}: {name} visually clipped: {b}"
                   assert float(data["leftBorder"].replace("px","")) >= 1, f"{width}: missing price card left border"
                   assert float(data["rightBorder"].replace("px","")) >= 1, f"{width}: missing price card right border"
-                  assert data["word"]["scrollWidth"] <= data["word"]["clientWidth"]+2, f"{width}: heading overflow"
+                  for label in ["word","eyebrow","price"]:
+                      b=data[label]
+                      assert b["scrollWidth"] <= b["clientWidth"]+2, f"{width}: text overflow in {label}: {b}"
                   if width in [320,390,1440]:
                       page.screenshot(path=f"price-{width}.png",full_page=True)
                   page.close()
