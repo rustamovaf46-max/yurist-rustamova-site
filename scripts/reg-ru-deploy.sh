@@ -55,6 +55,11 @@ if ! grep -q 'xn--80aafwvmkbibjcl2m.xn--p1ai' "$SRC_DIR/sitemap.xml"; then
   echo 'ОШИБКА: неверный домен в sitemap.xml.' >&2
   exit 1
 fi
+INDEXNOW_KEY='91f7e03d63fefe7098456dca52d83d4a'
+if [ ! -s "$SRC_DIR/$INDEXNOW_KEY.txt" ] || [ -L "$SRC_DIR/$INDEXNOW_KEY.txt" ] || [ "$(cat "$SRC_DIR/$INDEXNOW_KEY.txt")" != "$INDEXNOW_KEY" ]; then
+  echo 'ОШИБКА: нет действительного публичного файла подтверждения IndexNow.' >&2
+  exit 1
+fi
 if [ -n "$(find "$SRC_DIR/assets" -type l -print -quit)" ]; then
   echo 'ОШИБКА: символические ссылки в assets.' >&2
   exit 1
@@ -100,4 +105,6 @@ for f in "$SRC_DIR/robots.txt" "$SRC_DIR/sitemap.xml"; do
   [ -f "$f" ] || continue
   publish_file "$f"
 done
+# Файл проверки IndexNow нужен на боевом REG.RU; ранее сюда не копировался.
+publish_file "$SRC_DIR/$INDEXNOW_KEY.txt"
 echo "Готово: обновлено публичных файлов — $COUNT; сайт — $DOMAIN"
