@@ -51,6 +51,16 @@ jobs:
                   for name in ["eyebrow","word","panel","price"]:
                       b=data[name]
                       assert b["left"] >= -1 and b["right"] <= width+1, f"{width}: {name} visually clipped: {b}"
+                  if width <= 700:
+                      assert data["heading"]["left"] <= 10, f"{width}: price heading not shifted to left edge: {data['heading']}"
+                      assert data["eyebrow"]["left"] <= 10, f"{width}: eyebrow not shifted to left edge: {data['eyebrow']}"
+                      assert data["panel"]["left"] <= 10, f"{width}: price card not shifted left: {data['panel']}"
+                  articles=page.locator(".legal-article")
+                  assert articles.count()==3, f"{width}: expected 3 article cards"
+                  assert page.locator('.mobile-nav a[href="#articles"]').count()==1, "missing Yandex Android articles navigation"
+                  for card in articles.all():
+                      rect=card.bounding_box()
+                      assert rect and rect["x"]>=-1 and rect["x"]+rect["width"]<=width+1, f"{width}: article card clipped"
                   assert float(data["leftBorder"].replace("px","")) >= 1, f"{width}: missing price card left border"
                   assert float(data["rightBorder"].replace("px","")) >= 1, f"{width}: missing price card right border"
                   for label in ["word","eyebrow","price"]:
