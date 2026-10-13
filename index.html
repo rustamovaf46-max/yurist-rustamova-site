@@ -259,6 +259,19 @@ html{scroll-behavior:auto;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .legal-article:hover,.legal-article:focus-visible{border-color:#a67438;background:#fffdf7}
 @media(max-width:1000px){.legal-articles-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.legal-articles{margin-top:26px}.legal-articles-grid{grid-template-columns:minmax(0,1fr);gap:12px}.legal-article{min-height:0;padding:18px 17px;gap:9px}.legal-article strong{font-size:21px}}
+
+/* Precise left-aligned price heading for Yandex Android; no clipping at 280–430px. */
+.section-price .eyebrow,.section-price h2{position:relative;left:0;text-align:left}
+@media(max-width:700px){
+ .section-price .shell.price-grid{width:calc(100% - 22px);margin-left:6px;margin-right:16px;max-width:none}
+ .section-price .price-grid>div:first-child{padding:0;margin:0;min-width:0;width:100%;text-align:left}
+ .section-price .eyebrow{display:block;max-width:100%;margin:0 0 12px;font-size:11px;line-height:1.65;letter-spacing:.08em;white-space:normal;text-align:left}
+ .section-price h2{margin:0;font-size:clamp(22px,6.6vw,32px);line-height:1.22;letter-spacing:-.035em;max-width:100%;overflow-wrap:normal;word-break:normal;hyphens:none}
+ .section-price h2 em{display:block;margin-top:6px;font-size:clamp(20px,5.9vw,30px);white-space:normal;overflow-wrap:normal;word-break:normal;hyphens:none}
+ .section-price .price-panel{border:2px solid #c99e63;width:100%;margin:0;box-sizing:border-box;overflow:visible}
+ .section-price .price-amount{font-size:clamp(31px,9vw,49px);letter-spacing:-.025em}
+ .legal-articles{scroll-margin-top:85px}
+}
 </style>
 </head>
 <body>
@@ -270,14 +283,14 @@ html{scroll-behavior:auto;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 <span><strong>Фатима Рустамова</strong><small>Юрист · Судебный представитель</small></span>
 </a>
 <nav aria-label="Основная навигация" class="desktop-nav">
-<a href="#about">Обо мне</a><a href="#services">Услуги</a><a href="#video">Видео</a><a href="#price">Стоимость</a><a href="#how">Как работаю</a><a href="#contacts">Контакты</a>
+<a href="#about">Обо мне</a><a href="#services">Услуги</a><a href="#articles">Статьи</a><a href="#video">Видео</a><a href="#price">Стоимость</a><a href="#how">Как работаю</a><a href="#contacts">Контакты</a>
 </nav>
 <a aria-label="Мой контакт — набрать +7 (909) 928-23-98" class="header-phone" href="tel:+79099282398">+7 (909) 928-23-98</a>
 <a class="top-cta" href="https://max.ru/u/f9LHodD0cOJXOThelfL4zEZsDHL2apF2b_WxxjVt948nXhHX6XZt-opsspM" rel="noopener noreferrer" target="_blank">Связаться со мной ↗</a>
 <button aria-controls="mobile-nav" aria-expanded="false" aria-label="Открыть меню" class="menu-toggle"><span></span><span></span><span></span></button>
 </div>
 <nav aria-label="Мобильная навигация" class="mobile-nav" hidden="" id="mobile-nav">
-<a href="#about">Обо мне</a><a href="#services">Услуги</a><a href="#video">Видео</a><a href="#price">Стоимость</a><a href="#how">Как работаю</a><a href="#contacts">Контакты</a>
+<a href="#about">Обо мне</a><a href="#services">Услуги</a><a href="#articles">Статьи</a><a href="#video">Видео</a><a href="#price">Стоимость</a><a href="#how">Как работаю</a><a href="#contacts">Контакты</a>
 </nav>
 </header>
 <main id="main">
@@ -317,7 +330,7 @@ html{scroll-behavior:auto;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 <article class="service-card" data-service="pension"><span class="service-number">06</span><span class="service-icon">§</span><h3>Пенсионные споры</h3><p>Назначение и перерасчёт пенсий, подтверждение стажа, оспаривание отказов и решений.</p><button aria-haspopup="dialog" aria-label="Подробнее: Пенсионные споры" class="service-open" data-service="pension" type="button">Посмотреть вопросы <span aria-hidden="true">↗</span></button></article>
 <article class="service-card service-card-featured" data-service="military"><span class="service-number">07</span><span aria-hidden="true" class="service-icon">✧</span><h3>Военные споры и права семей военнослужащих</h3><p>Положенные выплаты и льготы, споры между родственниками, оспаривание права родителей на выплаты при наличии законных оснований.</p><button aria-haspopup="dialog" aria-label="Подробнее: Военные споры и права семей военнослужащих" class="service-open" data-service="military" type="button">Посмотреть вопросы <span aria-hidden="true">↗</span></button></article>
 </div>
-<div class="services-note"><span>Ваш спор не указан?</span><p>Расскажите о ситуации — обсудим возможный порядок защиты.</p><a href="#contacts">Связаться <span aria-hidden="true">→</span></a></div><div class="legal-articles" aria-labelledby="legal-articles-title">
+<div class="services-note"><span>Ваш спор не указан?</span><p>Расскажите о ситуации — обсудим возможный порядок защиты.</p><a href="#contacts">Связаться <span aria-hidden="true">→</span></a></div><div class="legal-articles" id="articles" aria-labelledby="legal-articles-title">
   <h3 id="legal-articles-title">Полезные юридические статьи</h3>
   <p class="legal-articles-intro">Разбираю конкретные вопросы, с которыми обращаются за судебной защитой.</p>
   <div class="legal-articles-grid">
