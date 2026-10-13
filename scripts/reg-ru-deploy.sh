@@ -6,7 +6,7 @@ umask 077
 DOMAIN='xn--80aafwvmkbibjcl2m.xn--p1ai'
 ARCHIVE_URL='https://github.com/rustamovaf46-max/yurist-rustamova-site/archive/refs/heads/main.zip'
 SITE_DIR=''
-for candidate in "$HOME/www/$DOMAIN" "$HOME/data/www/$DOMAIN" "/var/www/u3681387/data/www/$DOMAIN"; do
+for candidate in "${HOME:-/var/www/u3681387/data}/www/$DOMAIN" "${HOME:-/var/www/u3681387}/data/www/$DOMAIN" "/var/www/u3681387/data/www/$DOMAIN"; do
   if [ -f "$candidate/index.html" ] && [ -d "$candidate/assets" ]; then
     if [ -n "$SITE_DIR" ] && [ "$SITE_DIR" != "$candidate" ]; then
       echo 'ОШИБКА: обнаружены две папки сайта; остановка.' >&2
