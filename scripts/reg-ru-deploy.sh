@@ -1,5 +1,6 @@
 #!/bin/sh
-# Синхронизация только публичных файлов сайта из ветки main. Без паролей.
+# Синхронизация опубликованных SEO-статей, sitemap и robots.txt из main.
+# НЕ менять главную страницу, старые фотографии, видео, оформление и контакты.
 set -eu
 umask 077
 DOMAIN='xn--80aafwvmkbibjcl2m.xn--p1ai'
@@ -82,11 +83,14 @@ publish_file() {
   mv -f "$temp_file" "$target_file"
   COUNT=$((COUNT + 1))
 }
-for f in "$SRC_DIR"/*.html "$SRC_DIR"/*.css "$SRC_DIR"/*.js "$SRC_DIR/robots.txt" "$SRC_DIR/sitemap.xml" "$SRC_DIR/91f7e03d63fefe7098456dca52d83d4a.txt"; do
+for f in "$SRC_DIR"/*.html; do
   [ -f "$f" ] || continue
+  case "${f##*/}" in
+    index.html|googled3be2855f213bfb7.html) continue ;;
+  esac
   publish_file "$f"
 done
-for f in "$SRC_DIR"/assets/*; do
+for f in "$SRC_DIR/robots.txt" "$SRC_DIR/sitemap.xml"; do
   [ -f "$f" ] || continue
   publish_file "$f"
 done
