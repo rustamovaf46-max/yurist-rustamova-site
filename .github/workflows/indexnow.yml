@@ -6,6 +6,8 @@ on:
       - sitemap.xml
       - .github/workflows/indexnow.yml
   workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'  # повторная проверка после почасовой синхронизации REG.RU
 
 permissions:
   contents: read
@@ -21,35 +23,46 @@ jobs:
     steps:
       - name: Скачать код сайта
         uses: actions/checkout@v4
-      - name: Дождаться подтверждения новой карты сайта на основном домене
+      - name: Сверить sitemap и публичный ключ на REG.RU
+        id: verify
         run: |
           python3 - <<'PY'
+          import hashlib
+          import os
           from pathlib import Path
           from urllib.request import Request, urlopen
-          from time import sleep
           from xml.etree import ElementTree as ET
 
           base = "https://xn--80aafwvmkbibjcl2m.xn--p1ai"
           key = "91f7e03d63fefe7098456dca52d83d4a"
           expected = Path("sitemap.xml").read_bytes()
           assert ET.fromstring(expected).tag.endswith("urlset")
-          for attempt in range(1, 25):
-              try:
-                  with urlopen(Request(base + "/" + key + ".txt", headers={"User-Agent": "RustamovaIndexNow/1.0"}), timeout=15) as response:
-                      current_key = response.read().decode("utf-8").strip()
-                  with urlopen(Request(base + "/sitemap.xml", headers={"User-Agent": "RustamovaIndexNow/1.0"}), timeout=15) as response:
-                      live_sitemap = response.read()
-                  if current_key == key and live_sitemap == expected:
-                      print("Production verification key and latest sitemap are published.")
-                      break
-                  print(f"Waiting for Netlify deployment ({attempt}/24); published sitemap differs.")
-              except Exception as exc:
-                  print(f"Waiting for Netlify deployment ({attempt}/24): {type(exc).__name__}")
-              if attempt == 24:
-                  raise SystemExit("Netlify deployment not confirmed. Did not submit stale URLs.")
-              sleep(12)
+          ready = False
+          try:
+              with urlopen(Request(base + "/" + key + ".txt", headers={"User-Agent": "RustamovaIndexNow/1.0"}), timeout=20) as response:
+                  current_key = response.read().decode("utf-8").strip()
+              with urlopen(Request(base + "/sitemap.xml", headers={"User-Agent": "RustamovaIndexNow/1.0"}), timeout=20) as response:
+                  live_sitemap = response.read()
+              ready = current_key == key and live_sitemap == expected
+          except Exception as exc:
+              print("REG.RU readiness check:", type(exc).__name__)
+          if ready:
+              print("Confirmed: current REG.RU sitemap and IndexNow key are publicly accessible.")
+          else:
+              print("REG.RU sitemap is not synchronized yet. IndexNow deferred until hourly retry; no obsolete URLs sent.")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              print(f"site_ready={'true' if ready else 'false'}", file=output)
+              print(f"file_hash={hashlib.sha256(expected).hexdigest()}", file=output)
           PY
+      - name: Проверить, отправлялась ли уже текущая версия sitemap
+        if: steps.verify.outputs.site_ready == 'true'
+        id: notified
+        uses: actions/cache/restore@v4
+        with:
+          path: .indexnow-notified
+          key: indexnow-v1-${{ steps.verify.outputs.file_hash }}
       - name: Отправить опубликованные URL через IndexNow
+        if: steps.verify.outputs.site_ready == 'true' && steps.notified.outputs.cache-hit != 'true'
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -93,3 +106,14 @@ jobs:
           if code not in (200, 202):
               raise SystemExit(f"Unexpected IndexNow response: {code}")
           PY
+      - name: Сохранить метку об успешной отправке
+        if: steps.verify.outputs.site_ready == 'true' && steps.notified.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p .indexnow-notified
+          echo "Submitted only after REG.RU sitemap verification" > .indexnow-notified/sent
+      - name: Запомнить отправленную версию sitemap
+        if: steps.verify.outputs.site_ready == 'true' && steps.notified.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .indexnow-notified
+          key: indexnow-v1-${{ steps.verify.outputs.file_hash }}
