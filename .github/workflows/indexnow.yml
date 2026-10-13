@@ -32,6 +32,16 @@ jobs:
           from pathlib import Path
           from urllib.request import Request, urlopen
           from xml.etree import ElementTree as ET
+          from urllib.parse import urlparse
+          from html.parser import HTMLParser
+
+          class RobotsMeta(HTMLParser):
+              blocked = False
+              def handle_starttag(self, tag, attrs):
+                  values = dict(attrs)
+                  if tag.lower() == "meta" and values.get("name", "").lower() in ("robots", "bingbot", "googlebot", "yandex"):
+                      if "noindex" in values.get("content", "").lower():
+                          self.blocked = True
 
           base = "https://xn--80aafwvmkbibjcl2m.xn--p1ai"
           key = "91f7e03d63fefe7098456dca52d83d4a"
@@ -44,10 +54,32 @@ jobs:
               with urlopen(Request(base + "/sitemap.xml", headers={"User-Agent": "RustamovaIndexNow/1.0"}), timeout=20) as response:
                   live_sitemap = response.read()
               ready = current_key == key and live_sitemap == expected
+              if ready:
+                  # Даже совпадающая карта сайта не подтверждает наличие страниц.
+                  for item in ET.fromstring(expected).iter():
+                      if not item.tag.endswith("loc") or not item.text:
+                          continue
+                      url = item.text.strip()
+                      parsed = urlparse(url)
+                      if parsed.scheme != "https" or parsed.hostname != urlparse(base).hostname:
+                          raise ValueError("адрес вне основного HTTPS-домена")
+                      with urlopen(Request(url, headers={"User-Agent": "RustamovaIndexNow/1.0"}), timeout=20) as page:
+                          final = urlparse(page.url)
+                          if page.status != 200 or final.scheme != "https" or final.hostname != parsed.hostname or final.path != parsed.path:
+                              raise ValueError("страница не подтверждена: " + url)
+                          if "text/html" not in page.headers.get("Content-Type", "").lower():
+                              raise ValueError("страница не является HTML: " + url)
+                          if "noindex" in page.headers.get("X-Robots-Tag", "").lower():
+                              raise ValueError("X-Robots-Tag запрещает индексацию: " + url)
+                          parser = RobotsMeta()
+                          parser.feed(page.read().decode("utf-8"))
+                          if parser.blocked:
+                              raise ValueError("meta robots запрещает индексацию: " + url)
           except Exception as exc:
-              print("REG.RU readiness check:", type(exc).__name__)
+              ready = False
+              print("REG.RU readiness check:", type(exc).__name__, str(exc))
           if ready:
-              print("Confirmed: current REG.RU sitemap and IndexNow key are publicly accessible.")
+              print("Confirmed: current REG.RU sitemap, IndexNow key and all HTML pages are publicly accessible.")
           else:
               print("REG.RU sitemap is not synchronized yet. IndexNow deferred until hourly retry; no obsolete URLs sent.")
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
