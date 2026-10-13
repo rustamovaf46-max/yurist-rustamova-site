@@ -1,0 +1,38 @@
+name: Verify REG.RU live publication
+
+on:
+  push:
+    paths:
+      - .github/workflows/verify-reg-ru-live.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Confirm live site article and portrait
+        shell: bash
+        run: |
+          set -euo pipefail
+          site="https://xn--80aafwvmkbibjcl2m.xn--p1ai"
+          echo "Checking main HTTPS page"
+          curl -fLsS --retry 3 --retry-delay 5 --connect-timeout 10 --max-time 60 "$site/" -o index.html
+          grep -q 'assets/fatima-white-suit-hero.avif' index.html
+          grep -q 'height:auto;aspect-ratio:4/5;object-fit:contain' index.html
+          echo "Checking photo file"
+          curl -fLsS --retry 3 --retry-delay 5 --connect-timeout 10 --max-time 60 "$site/assets/fatima-white-suit-hero.avif" -o portrait.avif
+          test "$(wc -c < portrait.avif)" -gt 10000
+          head -c 48 portrait.avif | xxd -p | head -c 96
+          echo
+          echo "Checking published inheritance article"
+          curl -fLsS --retry 3 --retry-delay 5 --connect-timeout 10 --max-time 60 "$site/vosstanovlenie-sroka-prinyatiya-nasledstva.html" -o article.html
+          grep -q 'Восстановление срока принятия наследства' article.html
+          ! grep -q 'name="robots" content="noindex' article.html
+          echo "Checking sitemap"
+          curl -fLsS --retry 3 --retry-delay 5 --connect-timeout 10 --max-time 60 "$site/sitemap.xml" -o sitemap.xml
+          grep -q 'vosstanovlenie-sroka-prinyatiya-nasledstva.html' sitemap.xml
+          echo "VERIFIED: live site has new photo, mobile no-crop CSS, article and sitemap"
