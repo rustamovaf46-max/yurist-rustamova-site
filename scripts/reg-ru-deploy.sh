@@ -83,10 +83,16 @@ publish_file() {
   mv -f "$temp_file" "$target_file"
   COUNT=$((COUNT + 1))
 }
+# Обновляем новый портрет до index.html, чтобы не было битой картинки.
+if [ ! -s "$SRC_DIR/assets/fatima-white-suit-hero.avif" ]; then
+  echo 'ОШИБКА: новый портрет отсутствует в архиве; публикация остановлена.' >&2
+  exit 1
+fi
+publish_file "$SRC_DIR/assets/fatima-white-suit-hero.avif"
 for f in "$SRC_DIR"/*.html; do
   [ -f "$f" ] || continue
   case "${f##*/}" in
-    index.html|googled3be2855f213bfb7.html) continue ;;
+    googled3be2855f213bfb7.html) continue ;;
   esac
   publish_file "$f"
 done
