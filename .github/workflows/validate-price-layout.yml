@@ -1,0 +1,68 @@
+name: Проверка мобильной вёрстки блока цены
+
+on:
+  push:
+    paths:
+      - index.html
+      - .github/workflows/validate-price-layout.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  responsive-price:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python and headless browser
+        run: |
+          python -m pip install playwright==1.55.0
+          python -m playwright install chromium --with-deps
+      - name: Verify price layout at smartphone, tablet and desktop sizes
+        shell: bash
+        run: |
+          python - <<'PY'
+          import pathlib
+          from playwright.sync_api import sync_playwright
+          url = pathlib.Path("index.html").resolve().as_uri()
+          with sync_playwright() as p:
+              browser = p.chromium.launch(headless=True, args=["--no-sandbox"])
+              for width in [280, 320, 360, 375, 390, 430, 700, 768, 1024, 1440]:
+                  page = browser.new_page(viewport={"width": width, "height": 880}, device_scale_factor=1)
+                  page.goto(url)
+                  section = page.locator(".section-price")
+                  section.scroll_into_view_if_needed()
+                  data = page.evaluate("""() => {
+                    const sel=(s)=>document.querySelector(s);
+                    const box=(s)=>{let x=sel(s), r=x.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width,clientWidth:x.clientWidth,scrollWidth:x.scrollWidth, height:r.height}};
+                    return {eyebrow:box(".section-price .eyebrow"),
+                      heading:box(".section-price h2"),
+                      word:box(".section-price h2 em"),
+                      panel:box(".section-price .price-panel"),
+                      price:box(".section-price .price-amount"),
+                      leftBorder:getComputedStyle(sel(".section-price .price-panel")).borderLeftWidth,
+                      rightBorder:getComputedStyle(sel(".section-price .price-panel")).borderRightWidth,
+                      viewport:window.innerWidth
+                    };
+                  }""")
+                  print(width, data, flush=True)
+                  for name in ["eyebrow","word","panel","price"]:
+                      b=data[name]
+                      assert b["left"] >= -1 and b["right"] <= width+1, f"{width}: {name} visually clipped: {b}"
+                  assert float(data["leftBorder"].replace("px","")) >= 1, f"{width}: missing price card left border"
+                  assert float(data["rightBorder"].replace("px","")) >= 1, f"{width}: missing price card right border"
+                  assert data["word"]["scrollWidth"] <= data["word"]["clientWidth"]+2, f"{width}: heading overflow"
+                  if width in [320,390,1440]:
+                      page.screenshot(path=f"price-{width}.png",full_page=True)
+                  page.close()
+              browser.close()
+          PY
+      - name: Mobile screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: price-responsive-screenshots
+          path: price-*.png
+          if-no-files-found: ignore
