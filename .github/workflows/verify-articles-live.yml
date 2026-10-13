@@ -1,0 +1,48 @@
+name: Проверка трех опубликованных статей
+
+on:
+  push:
+    paths:
+      - index.html
+      - .github/workflows/verify-articles-live.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-articles:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Check live article pages, sitemap and homepage visibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          site="https://xn--80aafwvmkbibjcl2m.xn--p1ai"
+          curl -fLsS --retry 2 --connect-timeout 10 --max-time 45 "$site/" -o home.html
+          curl -fLsS --retry 2 --connect-timeout 10 --max-time 45 "$site/sitemap.xml" -o sitemap.xml
+          for url in poryadok-polzovaniya-kvartiroy vselenie-v-kvartiru-cherez-sud vosstanovlenie-sroka-prinyatiya-nasledstva; do
+            echo "::group::Article: $url"
+            curl -fLsS --retry 2 --connect-timeout 10 --max-time 45 "$site/$url.html" -o "article-$url.html"
+            if ! grep -q '<h1' "article-$url.html"; then
+              echo "::error::No H1 in live article $url" 
+              exit 1
+            fi
+            if ! grep -q "$url.html" sitemap.xml; then
+              echo "::error::Missing in sitemap: $url"
+              exit 1
+            fi
+            if grep -q "href=\"/$url.html\"" home.html; then
+              echo "HOMEPAGE LINK: PRESENT for $url"
+            else
+              echo "::warning::HOMEPAGE LINK NOT YET LIVE for $url (REG.RU hourly cron pending)"
+            fi
+            echo "ARTICLE: HTTP 200, H1 and sitemap entry confirmed"
+            echo "::endgroup::"
+          done
+          if grep -q 'id="legal-articles-title"' home.html && [ "$(grep -o 'class="legal-article" href=' home.html | wc -l)" -eq 3 ]; then
+            echo "HOMEPAGE: all 3 cards published"
+          else
+            echo "::warning::HOMEPAGE: 3-card block not deployed yet; REG.RU must sync index.html"
+          fi
