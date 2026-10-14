@@ -4,6 +4,14 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
+<script>
+(function(){
+  if('scrollRestoration' in history) history.scrollRestoration='manual';
+  const resetTop=()=>{if(!location.hash) window.scrollTo(0,0);};
+  resetTop();
+  window.addEventListener('pageshow',()=>requestAnimationFrame(resetTop),{passive:true});
+})();
+</script>
 <meta content="#121211" name="theme-color"/>
 <meta content="Нужен юрист для суда в Москве или Московской области? Фатима Рустамова — судебный представитель по жилищным, семейным, наследственным, земельным и другим спорам. Представительство от 50 000 ₽ за инстанцию." name="description"/>
 <meta content="Фатима Рустамова — юрист и судебный представитель" property="og:title"/>
@@ -271,6 +279,38 @@ html{scroll-behavior:auto;-webkit-text-size-adjust:100%;text-size-adjust:100%}
  .section-price .price-panel{border:2px solid #c99e63;width:100%;margin:0;box-sizing:border-box;overflow:visible}
  .section-price .price-amount{font-size:clamp(31px,9vw,49px);letter-spacing:-.025em}
  .legal-articles{scroll-margin-top:85px}
+}
+
+/* Stable mobile gutters and opening position, 2026-10-14. */
+body{overflow-x:hidden;overflow-x:clip}
+@media(max-width:700px){
+  .section-price .shell.price-grid{
+    width:calc(100% - 36px);
+    margin-left:auto;
+    margin-right:auto;
+    max-width:none;
+  }
+  .section-video .shell.video-layout{
+    width:calc(100% - 36px);
+    margin-left:auto;
+    margin-right:auto;
+    max-width:none;
+  }
+  .video-player-top,.video-player-bottom{
+    min-width:0;
+    max-width:100%;
+    align-items:flex-start;
+  }
+  .video-player-top>*,.video-player-bottom>*{
+    min-width:0;
+    max-width:100%;
+    white-space:normal;
+    overflow-wrap:anywhere;
+  }
+  .video-player-bottom>*:first-child{flex:1 1 auto}
+  .video-player-bottom>*:last-child{flex:0 0 auto;white-space:nowrap}
+  .section-price .price-panel,
+  .section-price .price-panel .btn{max-width:100%}
 }
 </style>
 </head>
