@@ -1,4 +1,4 @@
-name: Проверка трех опубликованных статей
+name: Проверка четырёх опубликованных статей
 
 on:
   push:
@@ -22,11 +22,11 @@ jobs:
           site="https://xn--80aafwvmkbibjcl2m.xn--p1ai"
           # Cache-busting URL and mobile Yandex user-agent so that an outdated home cannot masquerade as a successful deploy.
           ua="Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36 YaBrowser/24.12.0.0"
-          curl -fLsS --retry 2 --connect-timeout 10 --max-time 45 -D home-headers.txt -A "$ua" -H "Cache-Control: no-cache" "$site/?_deploy_verify=20261013pricefix" -o home.html
+          curl -fLsS --retry 2 --connect-timeout 10 --max-time 45 -D home-headers.txt -A "$ua" -H "Cache-Control: no-cache" "$site/?_deploy_verify=20261014familyarticle" -o home.html
           echo "Live response headers (cache policies):"
           grep -iE '^(HTTP/|cache-control:|age:|etag:|last-modified:|server:)' home-headers.txt || true
           curl -fLsS --retry 2 --connect-timeout 10 --max-time 45 "$site/sitemap.xml" -o sitemap.xml
-          for url in poryadok-polzovaniya-kvartiroy vselenie-v-kvartiru-cherez-sud vosstanovlenie-sroka-prinyatiya-nasledstva; do
+          for url in poryadok-polzovaniya-kvartiroy vselenie-v-kvartiru-cherez-sud vosstanovlenie-sroka-prinyatiya-nasledstva opredelenie-mesta-zhitelstva-rebenka-cherez-sud; do
             echo "::group::Article: $url"
             curl -fLsS --retry 2 --connect-timeout 10 --max-time 45 "$site/$url.html" -o "article-$url.html"
             if ! grep -q '<h1' "article-$url.html"; then
@@ -50,8 +50,8 @@ jobs:
             echo "::error::Old housing article block is still on REG.RU"
             exit 1
           fi
-          if ! grep -q 'id="legal-articles-title"' home.html || [ "$(grep -o 'class="legal-article" href=' home.html | wc -l)" -ne 3 ]; then
-            echo "::error::REG.RU home is OUTDATED: new 3 article cards absent"
+          if ! grep -q 'id="legal-articles-title"' home.html || [ "$(grep -o 'class="legal-article" href=' home.html | wc -l)" -ne 4 ]; then
+            echo "::error::REG.RU home is OUTDATED: new 4 article cards absent"
             exit 1
           fi
           if ! grep -q 'href="#articles"' home.html; then
@@ -62,4 +62,4 @@ jobs:
             echo "::error::Live CSS missing mobile price alignment fix"
             exit 1
           fi
-          echo "VERIFIED: old housing block absent, 3 cards, Yandex mobile menu and shifted heading are live"
+          echo "VERIFIED: old housing block absent, 4 cards, Yandex mobile menu and shifted heading are live"
