@@ -1,11 +1,12 @@
-name: Проверка четырёх опубликованных статей
+name: Проверка опубликованных SEO-статей на REG.RU
 
 on:
+  workflow_dispatch:
+  schedule:
+    - cron: '47 * * * *' # После почасовой серверной синхронизации REG.RU
   push:
     paths:
-      - index.html
       - .github/workflows/verify-articles-live.yml
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -13,53 +14,106 @@ permissions:
 jobs:
   verify-articles:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 12
     steps:
-      - name: Check live article pages, sitemap and homepage visibility
+      - name: Получить эталонный sitemap из main
+        uses: actions/checkout@v4
+
+      - name: Сверить ВСЕ статьи, sitemap и карточки действующего сайта
         shell: bash
         run: |
           set -euo pipefail
-          site="https://xn--80aafwvmkbibjcl2m.xn--p1ai"
-          # Cache-busting URL and mobile Yandex user-agent so that an outdated home cannot masquerade as a successful deploy.
-          ua="Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36 YaBrowser/24.12.0.0"
-          curl -fLsS --retry 2 --connect-timeout 10 --max-time 45 -D home-headers.txt -A "$ua" -H "Cache-Control: no-cache" "$site/?_deploy_verify=20261014familyarticle" -o home.html
-          echo "Live response headers (cache policies):"
-          grep -iE '^(HTTP/|cache-control:|age:|etag:|last-modified:|server:)' home-headers.txt || true
-          curl -fLsS --retry 2 --connect-timeout 10 --max-time 45 "$site/sitemap.xml" -o sitemap.xml
-          for url in poryadok-polzovaniya-kvartiroy vselenie-v-kvartiru-cherez-sud vosstanovlenie-sroka-prinyatiya-nasledstva opredelenie-mesta-zhitelstva-rebenka-cherez-sud; do
-            echo "::group::Article: $url"
-            curl -fLsS --retry 2 --connect-timeout 10 --max-time 45 "$site/$url.html" -o "article-$url.html"
-            if ! grep -q '<h1' "article-$url.html"; then
-              echo "::error::No H1 in live article $url" 
-              exit 1
-            fi
-            if ! grep -q "$url.html" sitemap.xml; then
-              echo "::error::Missing in sitemap: $url"
-              exit 1
-            fi
-            if grep -q "href=\"/$url.html\"" home.html; then
-              echo "HOMEPAGE LINK: PRESENT for $url"
-            else
-              echo "::warning::HOMEPAGE LINK NOT YET LIVE for $url (REG.RU hourly cron pending)"
-            fi
-            echo "ARTICLE: HTTP 200, H1 and sitemap entry confirmed"
-            echo "::endgroup::"
-          done
-          echo "HOME: bytes $(wc -c < home.html)"
-          if grep -q 'housing-article-link' home.html; then
-            echo "::error::Old housing article block is still on REG.RU"
-            exit 1
-          fi
-          if ! grep -q 'id="legal-articles-title"' home.html || [ "$(grep -o 'class="legal-article" href=' home.html | wc -l)" -ne 4 ]; then
-            echo "::error::REG.RU home is OUTDATED: new 4 article cards absent"
-            exit 1
-          fi
-          if ! grep -q 'href="#articles"' home.html; then
-            echo "::error::New mobile articles navigation missing on live site"
-            exit 1
-          fi
-          if ! grep -q 'Precise left-aligned price heading' home.html; then
-            echo "::error::Live CSS missing mobile price alignment fix"
-            exit 1
-          fi
-          echo "VERIFIED: old housing block absent, 4 cards, Yandex mobile menu and shifted heading are live"
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          from urllib.parse import urljoin, urlparse
+          from urllib.request import Request, urlopen
+          from xml.etree import ElementTree as ET
+          import os
+
+          BASE = "https://xn--80aafwvmkbibjcl2m.xn--p1ai"
+          UA = "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36 YaBrowser/24.12"
+          run_id = os.environ.get("GITHUB_RUN_ID", "check")
+
+          def fetch(url):
+              request = Request(url, headers={"User-Agent": UA, "Cache-Control": "no-cache"})
+              with urlopen(request, timeout=45) as response:
+                  final = urlparse(response.url)
+                  original = urlparse(url)
+                  if response.status != 200 or final.scheme != "https" or final.netloc != original.netloc or final.path != original.path:
+                      raise RuntimeError(f"Unexpected response or redirect: {url} => {response.url}; HTTP {response.status}")
+                  if "text/html" in response.headers.get("Content-Type", ""):
+                      if "noindex" in response.headers.get("X-Robots-Tag", "").lower():
+                          raise RuntimeError(f"X-Robots-Tag noindex: {url}")
+                  return response.read().decode("utf-8"), response.headers
+
+          def sitemap_urls(xml_data):
+              root = ET.fromstring(xml_data)
+              urls = set()
+              for item in root.iter():
+                  if not item.tag.endswith("loc") or not item.text:
+                      continue
+                  url = item.text.strip()
+                  parsed = urlparse(url)
+                  if parsed.scheme != "https" or parsed.netloc != urlparse(BASE).netloc:
+                      raise RuntimeError(f"Foreign or non-HTTPS URL in sitemap: {url}")
+                  urls.add(url)
+              return urls
+
+          class Page(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.links = set()
+                  self.cards = set()
+                  self.has_h1 = False
+                  self.noindex = False
+
+              def handle_starttag(self, tag, attrs):
+                  props = dict(attrs)
+                  if tag == "h1":
+                      self.has_h1 = True
+                  if tag == "meta" and props.get("name", "").lower() in ("robots", "yandex", "googlebot", "bingbot"):
+                      if "noindex" in props.get("content", "").lower():
+                          self.noindex = True
+                  if tag == "a" and props.get("href"):
+                      absolute = urljoin(BASE + "/", props["href"]).split("#")[0].split("?")[0]
+                      self.links.add(absolute)
+                      if "legal-article" in props.get("class", "").split():
+                          self.cards.add(absolute)
+
+          expected = sitemap_urls(Path("sitemap.xml").read_text(encoding="utf-8"))
+          actual, _ = fetch(BASE + "/sitemap.xml?run=" + run_id)
+          live = sitemap_urls(actual)
+          if expected != live:
+              raise RuntimeError(f"REG.RU sitemap differs from GitHub. Missing: {sorted(expected-live)}; extra: {sorted(live-expected)}")
+
+          expected_articles = {u for u in expected if urlparse(u).path.endswith(".html") and
+                               not urlparse(u).path.endswith("/privacy-policy.html")}
+          if not expected_articles:
+              raise RuntimeError("No SEO articles in sitemap")
+          homepage, headers = fetch(BASE + "/?run=" + run_id)
+          home = Page()
+          home.feed(homepage)
+          if home.noindex:
+              raise RuntimeError("Homepage has noindex")
+          if 'id="legal-articles-title"' not in homepage or 'href="#articles"' not in homepage:
+              raise RuntimeError("Homepage article section or mobile navigation missing")
+          if "Precise left-aligned price heading" not in homepage:
+              raise RuntimeError("Mobile price heading CSS missing")
+          if expected_articles != home.cards:
+              raise RuntimeError(f"Article cards out of sync. Missing: {sorted(expected_articles-home.cards)}; extra: {sorted(home.cards-expected_articles)}")
+          if expected_articles - home.links:
+              raise RuntimeError(f"Some article links missing from homepage: {sorted(expected_articles-home.links)}")
+
+          for url in sorted(expected_articles):
+              page_html, page_headers = fetch(url + "?run=" + run_id)
+              if "text/html" not in page_headers.get("Content-Type", "").lower():
+                  raise RuntimeError(f"Not HTML: {url}")
+              page = Page()
+              page.feed(page_html)
+              if not page.has_h1 or page.noindex:
+                  raise RuntimeError(f"No H1 or noindex: {url}")
+              print("PASS:", url, "HTTP 200, H1, indexable, homepage card, sitemap")
+          print(f"VERIFIED: {len(expected_articles)} SEO articles, sitemap identical to GitHub, and {len(home.cards)} homepage cards on REG.RU")
+          print("This checks technical accessibility, not actual Yandex/Google indexing.")
+          PY
