@@ -7,6 +7,7 @@ on:
   push:
     paths:
       - .github/workflows/verify-articles-live.yml
+      - yandex_f716343b29761cf2.html
 
 permissions:
   contents: read
@@ -117,3 +118,12 @@ jobs:
           print(f"VERIFIED: {len(expected_articles)} SEO articles, sitemap identical to GitHub, and {len(home.cards)} homepage cards on REG.RU")
           print("This checks technical accessibility, not actual Yandex/Google indexing.")
           PY
+
+      - name: Проверить файл подтверждения Яндекс.Вебмастера на REG.RU
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="https://xn--80aafwvmkbibjcl2m.xn--p1ai/yandex_f716343b29761cf2.html"
+          curl -fLsS --retry 3 --retry-delay 10 --connect-timeout 10 --max-time 30 -H "Cache-Control: no-cache" "${url}?verify=${GITHUB_RUN_ID}" -o yandex-verify-live.html
+          grep -Fq 'Verification: f716343b29761cf2' yandex-verify-live.html
+          echo "YANDEX VERIFIED FILE LIVE: HTTP 200 and correct token at ${url}"
