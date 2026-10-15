@@ -190,11 +190,11 @@ html{scroll-behavior:auto;-webkit-text-size-adjust:100%;text-size-adjust:100%}
     font-size:clamp(25px,7vw,34px);
     line-height:1.2;
     letter-spacing:-.025em;
-    overflow-wrap:anywhere;
+    overflow-wrap:break-word;
     word-break:normal;
     hyphens:auto;
   }
-  .section-price h2 em{overflow-wrap:anywhere;hyphens:auto}
+  .section-price h2 em{overflow-wrap:break-word;hyphens:auto}
   .section-price .price-panel{
     width:100%;
     max-width:100%;
@@ -206,7 +206,7 @@ html{scroll-behavior:auto;-webkit-text-size-adjust:100%;text-size-adjust:100%}
     font-size:clamp(34px,9.4vw,50px);
     line-height:1.18;
     white-space:normal;
-    overflow-wrap:anywhere;
+    overflow-wrap:break-word;
   }
   .section-price .price-amount small{font-size:clamp(16px,4.5vw,22px)}
   .section-price .price-amount span{font-size:clamp(22px,6vw,30px)}
@@ -216,7 +216,7 @@ html{scroll-behavior:auto;-webkit-text-size-adjust:100%;text-size-adjust:100%}
     max-width:100%;
     min-width:0;
     white-space:normal;
-    overflow-wrap:anywhere;
+    overflow-wrap:break-word;
     padding:14px 10px;
     gap:8px;
   }
@@ -281,6 +281,10 @@ html{scroll-behavior:auto;-webkit-text-size-adjust:100%;text-size-adjust:100%}
  .legal-articles{scroll-margin-top:85px}
 }
 
+/* Readable Russian text: preserve word boundaries throughout the site. */
+.hero-copy p,.credentials-item,.membership-list,.service-card p,.service-dialog,.about-copy,.section-lead,.services-note,.principles,.step,.contact-card,.legal-articles,.legal-article,.section-price .price-hint{word-break:normal;overflow-wrap:break-word;hyphens:none}
+.credentials-item>span:last-child,.membership-list>div>span:last-child{min-width:0;white-space:normal;word-spacing:normal}
+@media(max-width:700px){.credentials-item{align-items:flex-start}.credentials-item br{display:block}.membership-list>div{align-items:flex-start}.membership-list>div>span:last-child{flex:1 1 auto}}
 /* Stable mobile gutters and opening position, 2026-10-14. */
 body{overflow-x:hidden;overflow-x:clip}
 @media(max-width:700px){
@@ -305,7 +309,7 @@ body{overflow-x:hidden;overflow-x:clip}
     min-width:0;
     max-width:100%;
     white-space:normal;
-    overflow-wrap:anywhere;
+    overflow-wrap:break-word;
   }
   .video-player-bottom>*:first-child{flex:1 1 auto}
   .video-player-bottom>*:last-child{flex:0 0 auto;white-space:nowrap}
