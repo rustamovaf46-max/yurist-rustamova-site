@@ -4,7 +4,9 @@ on:
     branches: [main]
     paths:
       - sitemap.xml
+      - '*.html'
       - .github/workflows/indexnow.yml
+      - tests/test_indexnow_workflow.py
   workflow_dispatch:
   schedule:
     - cron: '17 * * * *'  # повторная проверка после почасовой синхронизации REG.RU
@@ -23,7 +25,9 @@ jobs:
     steps:
       - name: Скачать код сайта
         uses: actions/checkout@v4
-      - name: Сверить sitemap и публичный ключ на REG.RU
+      - name: Проверить защиту от устаревшей выкладки
+        run: python3 -m unittest discover -s tests -p 'test_indexnow_workflow.py' -v
+      - name: Сверить sitemap, содержимое страниц и публичный ключ на REG.RU
         id: verify
         run: |
           python3 - <<'PY'
@@ -32,7 +36,7 @@ jobs:
           from pathlib import Path
           from urllib.request import Request, urlopen
           from xml.etree import ElementTree as ET
-          from urllib.parse import urlparse
+          from urllib.parse import unquote, urlparse
           from html.parser import HTMLParser
 
           class RobotsMeta(HTMLParser):
@@ -47,6 +51,26 @@ jobs:
           key = "91f7e03d63fefe7098456dca52d83d4a"
           expected = Path("sitemap.xml").read_bytes()
           assert ET.fromstring(expected).tag.endswith("urlset")
+          # Ключ уведомления меняется и при правке существующей статьи,
+          # даже если список URL в sitemap остался прежним.
+          content_hash = hashlib.sha256(expected)
+          pages = {}
+          root_dir = Path.cwd().resolve()
+          for item in ET.fromstring(expected).iter():
+              if not item.tag.endswith("loc") or not item.text:
+                  continue
+              url = item.text.strip()
+              parsed = urlparse(url)
+              if parsed.scheme != "https" or parsed.hostname != urlparse(base).hostname:
+                  raise ValueError("адрес вне основного HTTPS-домена")
+              local_file = (root_dir / (unquote(parsed.path).lstrip("/") or "index.html")).resolve()
+              if not local_file.is_relative_to(root_dir) or not local_file.is_file():
+                  raise ValueError("нет исходного файла страницы: " + url)
+              pages[url] = local_file.read_bytes()
+          if not pages:
+              raise ValueError("sitemap не содержит страниц")
+          for url, source in sorted(pages.items()):
+              content_hash.update(url.encode("utf-8") + b"\0" + hashlib.sha256(source).digest())
           ready = False
           try:
               with urlopen(Request(base + "/" + key + ".txt", headers={"User-Agent": "RustamovaIndexNow/1.0"}), timeout=20) as response:
@@ -55,14 +79,9 @@ jobs:
                   live_sitemap = response.read()
               ready = current_key == key and live_sitemap == expected
               if ready:
-                  # Даже совпадающая карта сайта не подтверждает наличие страниц.
-                  for item in ET.fromstring(expected).iter():
-                      if not item.tag.endswith("loc") or not item.text:
-                          continue
-                      url = item.text.strip()
+                  # HTTP 200 и прежняя карта не доказывают выкладку нового текста.
+                  for url, source in pages.items():
                       parsed = urlparse(url)
-                      if parsed.scheme != "https" or parsed.hostname != urlparse(base).hostname:
-                          raise ValueError("адрес вне основного HTTPS-домена")
                       with urlopen(Request(url, headers={"User-Agent": "RustamovaIndexNow/1.0"}), timeout=20) as page:
                           final = urlparse(page.url)
                           if page.status != 200 or final.scheme != "https" or final.hostname != parsed.hostname or final.path != parsed.path:
@@ -71,28 +90,37 @@ jobs:
                               raise ValueError("страница не является HTML: " + url)
                           if "noindex" in page.headers.get("X-Robots-Tag", "").lower():
                               raise ValueError("X-Robots-Tag запрещает индексацию: " + url)
+                          published = page.read()
+                          if published != source:
+                              raise ValueError("содержимое страницы ещё не синхронизировано с main: " + url)
                           parser = RobotsMeta()
-                          parser.feed(page.read().decode("utf-8"))
+                          parser.feed(published.decode("utf-8"))
                           if parser.blocked:
                               raise ValueError("meta robots запрещает индексацию: " + url)
           except Exception as exc:
               ready = False
               print("REG.RU readiness check:", type(exc).__name__, str(exc))
           if ready:
-              print("Confirmed: current REG.RU sitemap, IndexNow key and all HTML pages are publicly accessible.")
+              print("Confirmed: REG.RU sitemap, IndexNow key and every HTML page match the current source.")
           else:
-              print("REG.RU sitemap is not synchronized yet. IndexNow deferred until hourly retry; no obsolete URLs sent.")
+              print("REG.RU content is not synchronized yet. IndexNow deferred until hourly retry; no obsolete URLs sent.")
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
               print(f"site_ready={'true' if ready else 'false'}", file=output)
-              print(f"file_hash={hashlib.sha256(expected).hexdigest()}", file=output)
+              print(f"file_hash={content_hash.hexdigest()}", file=output)
           PY
-      - name: Проверить, отправлялась ли уже текущая версия sitemap
+      - name: Зафиксировать ожидание синхронизации
+        if: steps.verify.outputs.site_ready != 'true'
+        run: echo 'IndexNow — ОТЛОЖЕНО. Содержимое REG.RU ещё не совпадает с main; отправки не было.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Проверить, отправлялась ли уже текущая версия содержимого
         if: steps.verify.outputs.site_ready == 'true'
         id: notified
         uses: actions/cache/restore@v4
         with:
           path: .indexnow-notified
-          key: indexnow-v1-${{ steps.verify.outputs.file_hash }}
+          key: indexnow-v2-${{ steps.verify.outputs.file_hash }}
+      - name: Зафиксировать отсутствие изменений
+        if: steps.verify.outputs.site_ready == 'true' && steps.notified.outputs.cache-hit == 'true'
+        run: echo 'IndexNow — БЕЗ ПОВТОРА. Эта версия страниц уже отправлена; новой отправки не было.' >> "$GITHUB_STEP_SUMMARY"
       - name: Отправить опубликованные URL через IndexNow
         if: steps.verify.outputs.site_ready == 'true' && steps.notified.outputs.cache-hit != 'true'
         run: |
@@ -103,6 +131,7 @@ jobs:
           from urllib.error import HTTPError
           from xml.etree import ElementTree as ET
           import json
+          import os
 
           key = "91f7e03d63fefe7098456dca52d83d4a"
           host = "xn--80aafwvmkbibjcl2m.xn--p1ai"
@@ -137,15 +166,20 @@ jobs:
               raise
           if code not in (200, 202):
               raise SystemExit(f"Unexpected IndexNow response: {code}")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+              print(f"IndexNow — ПРИНЯТО: HTTP {code}, URL: {len(urls)}. Это не подтверждение индексации.", file=summary)
+              if code == 202:
+                  print("Сервис ещё проверяет опубликованный ключ.", file=summary)
           PY
       - name: Сохранить метку об успешной отправке
         if: steps.verify.outputs.site_ready == 'true' && steps.notified.outputs.cache-hit != 'true'
         run: |
           mkdir -p .indexnow-notified
           echo "Submitted only after REG.RU sitemap verification" > .indexnow-notified/sent
-      - name: Запомнить отправленную версию sitemap
+      - name: Запомнить отправленную версию содержимого
         if: steps.verify.outputs.site_ready == 'true' && steps.notified.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: .indexnow-notified
-          key: indexnow-v1-${{ steps.verify.outputs.file_hash }}
+          key: indexnow-v2-${{ steps.verify.outputs.file_hash }}
+
