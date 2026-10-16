@@ -20,6 +20,38 @@ jobs:
       - name: Получить эталонный sitemap из main
         uses: actions/checkout@v4
 
+      - name: Проверить MAX на всех публичных страницах из sitemap
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          from urllib.parse import urlparse, unquote
+          from xml.etree import ElementTree as ET
+
+          MAX = "https://max.ru/u/f9LHodD0cOJXOThelfL4zEZsDHL2apF2b_WxxjVt948nXhHX6XZt-opsspM"
+          class Contacts(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.max_links = []
+              def handle_starttag(self, tag, attrs):
+                  values = dict(attrs)
+                  href = values.get("href", "")
+                  if tag == "a" and urlparse(href).hostname in ("max.ru", "www.max.ru"):
+                      self.max_links.append(href)
+
+          for loc in ET.parse("sitemap.xml").getroot().iter():
+              if not loc.tag.endswith("loc") or not loc.text:
+                  continue
+              name = unquote(urlparse(loc.text.strip()).path).lstrip("/") or "index.html"
+              parser = Contacts()
+              parser.feed(Path(name).read_text(encoding="utf-8"))
+              if not parser.max_links or any(href != MAX for href in parser.max_links):
+                  raise RuntimeError("Нет ссылки MAX владельца или указан другой профиль: " + name)
+              print("MAX SOURCE PASS:", name, len(parser.max_links), "links")
+          print("Source validation only; live publication is checked separately.")
+          PY
+
       - name: Сверить ВСЕ статьи, sitemap и карточки действующего сайта
         shell: bash
         run: |
@@ -127,3 +159,4 @@ jobs:
           curl -fLsS --retry 3 --retry-delay 10 --connect-timeout 10 --max-time 30 -H "Cache-Control: no-cache" "${url}?verify=${GITHUB_RUN_ID}" -o yandex-verify-live.html
           grep -Fq 'Verification: f716343b29761cf2' yandex-verify-live.html
           echo "YANDEX VERIFIED FILE LIVE: HTTP 200 and correct token at ${url}"
+
