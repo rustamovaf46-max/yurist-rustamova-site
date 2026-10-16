@@ -25,6 +25,12 @@ jobs:
         run: |
           python - <<'PY'
           import pathlib
+          import xml.etree.ElementTree as ET
+          from urllib.parse import urljoin, urlparse
+          expected_articles = {el.text.strip() for el in ET.parse("sitemap.xml").iter()
+                               if el.tag.endswith("loc") and el.text and
+                               urlparse(el.text.strip()).path.endswith(".html") and
+                               not urlparse(el.text.strip()).path.endswith("/privacy-policy.html")}
           from playwright.sync_api import sync_playwright
           url = pathlib.Path("index.html").resolve().as_uri()
           with sync_playwright() as p:
@@ -69,7 +75,9 @@ jobs:
                       for item in data["videoText"]:
                           assert item["scrollWidth"] <= item["clientWidth"]+2, f"{width}: clipped video text: {item}"
                   articles=page.locator(".legal-article")
-                  assert articles.count()==4, f"{width}: expected 4 article cards"
+                  assert expected_articles, "no articles in sitemap"
+                  actual_articles = {urljoin("https://xn--80aafwvmkbibjcl2m.xn--p1ai/", href) for href in articles.evaluate_all("cards => cards.map(card => card.getAttribute('href'))")}
+                  assert articles.count()==len(expected_articles) and actual_articles==expected_articles, f"{width}: article cards differ from sitemap"
                   assert page.locator('.mobile-nav a[href="#articles"]').count()==1, "missing Yandex Android articles navigation"
                   for card in articles.all():
                       rect=card.bounding_box()
