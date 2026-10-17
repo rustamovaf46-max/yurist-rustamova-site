@@ -151,6 +151,47 @@ jobs:
           print("This checks technical accessibility, not actual Yandex/Google indexing.")
           PY
 
+      - name: Ежедневный контроль новой статьи после 12:00 МСК
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+          from pathlib import Path
+          from urllib.parse import urlparse
+          from urllib.request import Request, urlopen
+          from xml.etree import ElementTree as ET
+          import os
+          now = datetime.now(ZoneInfo("Europe/Moscow"))
+          if now.hour < 12:
+              print("До 12:00 МСК проверка новой статьи ещё не обязательна:", now.isoformat())
+              raise SystemExit(0)
+          expected_day = now.date().isoformat()
+          base = "https://xn--80aafwvmkbibjcl2m.xn--p1ai"
+          candidates = []
+          for node in ET.parse("sitemap.xml").getroot():
+              url = node.findtext("{*}loc")
+              date = node.findtext("{*}lastmod", "")
+              if url and date.startswith(expected_day) and urlparse(url).path.endswith(".html") and "privacy-policy" not in url:
+                  candidates.append(url)
+          if not candidates:
+              raise SystemExit("::error::Сегодняшней SEO-статьи в sitemap.xml нет. Дата МСК: " + expected_day)
+          for url in candidates:
+              filename = Path(urlparse(url).path).name
+              text = Path(filename).read_text(encoding="utf-8")
+              if ('"datePublished":"' + expected_day + '"') not in text:
+                  raise SystemExit("::error::Дата публикации Article не совпадает с датой МСК: " + filename)
+              with urlopen(Request(url + "?fresh=" + os.environ.get("GITHUB_RUN_ID", "check"),
+                                   headers={"Cache-Control": "no-cache", "User-Agent": "Mozilla/5.0 (Linux; Android 14)"}), timeout=30) as response:
+                  if response.status != 200:
+                      raise SystemExit("::error::Статья недоступна на REG.RU: " + url)
+                  body = response.read().decode("utf-8")
+              if '"datePublished":"' + expected_day + '"' not in body:
+                  raise SystemExit("::error::Статья на REG.RU не обновлена: " + url)
+              print("TODAY LIVE SEO:", url, expected_day)
+          PY
+
       - name: Проверить файл подтверждения Яндекс.Вебмастера на REG.RU
         shell: bash
         run: |
