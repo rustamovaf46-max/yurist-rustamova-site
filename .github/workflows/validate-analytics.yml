@@ -1,0 +1,16 @@
+name: Проверка согласия, Метрики и Вебвизора
+on:
+  push:
+    branches: [main]
+    paths: ['*.html', 'analytics-consent.js', 'analytics-consent.css', 'scripts/install-analytics.py', 'tests/analytics-consent.test.cjs', '.github/workflows/validate-analytics.yml']
+  pull_request:
+    paths: ['*.html', 'analytics-consent.js', 'analytics-consent.css', 'scripts/install-analytics.py', 'tests/analytics-consent.test.cjs']
+permissions:
+  contents: read
+jobs:
+  consent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/install-analytics.py --check
+      - run: node --test tests/analytics-consent.test.cjs
