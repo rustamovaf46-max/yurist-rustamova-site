@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - index.html
+      - predstavitelstvo-v-sude-moskva.html
       - .github/workflows/validate-price-layout.yml
   workflow_dispatch:
 
