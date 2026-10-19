@@ -98,10 +98,51 @@ jobs:
                   page.close()
               browser.close()
           PY
+      - name: Проверить мобильную вёрстку всех статей из sitemap
+        shell: bash
+        run: |
+          python - <<'PY'
+          import pathlib
+          import xml.etree.ElementTree as ET
+          from urllib.parse import urlparse
+          from playwright.sync_api import sync_playwright
+          max_url = "https://max.ru/u/f9LHodD0cOJXOThelfL4zEZsDHL2apF2b_WxxjVt948nXhHX6XZt-opsspM"
+          files = [pathlib.Path(urlparse(el.text.strip()).path).name
+                   for el in ET.parse("sitemap.xml").iter()
+                   if el.tag.endswith("loc") and el.text and
+                   urlparse(el.text.strip()).path.endswith(".html") and
+                   not urlparse(el.text.strip()).path.endswith("/privacy-policy.html")]
+          assert files, "No articles"
+          with sync_playwright() as p:
+              browser = p.chromium.launch(headless=True, args=["--no-sandbox"])
+              for filename in files:
+                  for width in [320, 390, 768, 1440]:
+                      page = browser.new_page(viewport={"width": width, "height": 900})
+                      errors = []
+                      page.on("pageerror", lambda error: errors.append(str(error)))
+                      page.goto(pathlib.Path(filename).resolve().as_uri())
+                      assert page.locator("h1").count() == 1, filename
+                      assert page.evaluate("document.documentElement.scrollWidth") <= width, f"{filename}: overflow at {width}"
+                      max_links = page.locator('a[href^="https://max.ru/"]')
+                      assert max_links.count() >= 3 and all(href == max_url for href in max_links.evaluate_all("links => links.map(a => a.href)")), filename
+                      assert page.locator(".hero a").filter(has_text="MAX").is_visible(), filename + ": top MAX"
+                      assert page.locator(".cta-panel a").filter(has_text="MAX").is_visible(), filename + ": CTA MAX"
+                      assert page.locator('a[href="tel:+79099282398"]').count() >= 3, filename + ": telephone"
+                      if width <= 768:
+                          assert page.locator(".mobile-bottom").is_visible(), filename + ": mobile contacts"
+                      assert not errors, f"{filename}: JavaScript errors {errors}"
+                      if filename == "otmena-sudebnogo-prikaza-za-zhku.html" and width in [320,390,1440]:
+                          page.screenshot(path=f"article-{width}.png", full_page=True)
+                      print(f"ARTICLE MOBILE PASS: {filename} width={width}, no overflow, H1, MAX and phone")
+                      page.close()
+              browser.close()
+          PY
       - name: Mobile screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: price-responsive-screenshots
-          path: price-*.png
+          path: |
+            price-*.png
+            article-*.png
           if-no-files-found: ignore
