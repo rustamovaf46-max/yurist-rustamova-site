@@ -34,12 +34,16 @@ jobs:
               def __init__(self):
                   super().__init__()
                   self.max_links = []
+                  self.phone_links = []
               def handle_starttag(self, tag, attrs):
                   values = dict(attrs)
                   href = values.get("href", "")
                   if tag == "a" and urlparse(href).hostname in ("max.ru", "www.max.ru"):
                       self.max_links.append(href)
+                  if tag == "a" and href.lower().startswith("tel:"):
+                      self.phone_links.append(href)
 
+          expected_phone = None
           for loc in ET.parse("sitemap.xml").getroot().iter():
               if not loc.tag.endswith("loc") or not loc.text:
                   continue
@@ -48,7 +52,13 @@ jobs:
               parser.feed(Path(name).read_text(encoding="utf-8"))
               if not parser.max_links or any(href != MAX for href in parser.max_links):
                   raise RuntimeError("Нет ссылки MAX владельца или указан другой профиль: " + name)
-              print("MAX SOURCE PASS:", name, len(parser.max_links), "links")
+              if name == "index.html":
+                  if not parser.phone_links or len(set(parser.phone_links)) != 1:
+                      raise RuntimeError("На главной нет единого телефонного контакта.")
+                  expected_phone = parser.phone_links[0]
+              elif expected_phone is None or not parser.phone_links or any(href != expected_phone for href in parser.phone_links):
+                  raise RuntimeError("Телефонная ссылка отсутствует или расходится с главной: " + name)
+              print("CONTACT SOURCE PASS:", name, "MAX:", len(parser.max_links), "phone:", len(parser.phone_links))
           print("Source validation only; live publication is checked separately.")
           PY
 
@@ -97,7 +107,7 @@ jobs:
               def __init__(self):
                   super().__init__()
                   self.links = set()
-                  self.cards = set()
+                  self.cards = []
                   self.has_h1 = False
                   self.noindex = False
 
@@ -112,7 +122,7 @@ jobs:
                       absolute = urljoin(BASE + "/", props["href"]).split("#")[0].split("?")[0]
                       self.links.add(absolute)
                       if "legal-article" in props.get("class", "").split():
-                          self.cards.add(absolute)
+                          self.cards.append(absolute)
 
           expected = sitemap_urls(Path("sitemap.xml").read_text(encoding="utf-8"))
           actual, _ = fetch(BASE + "/sitemap.xml?run=" + run_id)
@@ -133,8 +143,10 @@ jobs:
               raise RuntimeError("Homepage article section or mobile navigation missing")
           if "Precise left-aligned price heading" not in homepage:
               raise RuntimeError("Mobile price heading CSS missing")
-          if expected_articles != home.cards:
-              raise RuntimeError(f"Article cards out of sync. Missing: {sorted(expected_articles-home.cards)}; extra: {sorted(home.cards-expected_articles)}")
+          if set(expected_articles) != set(home.cards) or len(home.cards) != len(expected_articles):
+              card_set = set(home.cards)
+              duplicates = sorted(u for u in card_set if home.cards.count(u) > 1)
+              raise RuntimeError(f"Article cards out of sync. Missing: {sorted(expected_articles-card_set)}; extra: {sorted(card_set-expected_articles)}; duplicates: {duplicates}")
           if expected_articles - home.links:
               raise RuntimeError(f"Some article links missing from homepage: {sorted(expected_articles-home.links)}")
 
@@ -151,7 +163,36 @@ jobs:
           print("This checks technical accessibility, not actual Yandex/Google indexing.")
           PY
 
+      - name: Проверить robots.txt непосредственно на REG.RU
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          from urllib.parse import urlparse
+          from urllib.request import Request, urlopen
+
+          base = "https://xn--80aafwvmkbibjcl2m.xn--p1ai"
+          expected = Path("robots.txt").read_bytes()
+          request = Request(base + "/robots.txt?run=" + os.environ.get("GITHUB_RUN_ID", "check"),
+                            headers={"Cache-Control": "no-cache", "User-Agent": "Mozilla/5.0"})
+          with urlopen(request, timeout=30) as response:
+              final = urlparse(response.url)
+              if response.status != 200 or final.scheme != "https" or final.netloc != urlparse(base).netloc:
+                  raise RuntimeError("robots.txt не вернулся по HTTPS с HTTP 200.")
+              live = response.read()
+          if live != expected:
+              raise RuntimeError("Живой robots.txt на REG.RU отличается от файла в main.")
+          rules = [line.strip() for line in live.decode("utf-8-sig").splitlines() if line.strip()]
+          if "User-agent: *" not in rules or "Allow: /" not in rules or "Sitemap: " + base + "/sitemap.xml" not in rules:
+              raise RuntimeError("В живом robots.txt отсутствует обязательное разрешение обхода или ссылка на sitemap.")
+          print("ROBOTS LIVE PASS: HTTP 200, HTTPS, содержимое полностью совпадает с main.")
+          PY
+
       - name: Ежедневный контроль новой статьи после 12:00 МСК
+        if: always()
         shell: bash
         run: |
           set -euo pipefail
