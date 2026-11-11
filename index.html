@@ -276,6 +276,21 @@ html{scroll-behavior:auto;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @media(max-width:900px){.representation-spotlight{grid-template-columns:1fr}.spotlight-aside{max-width:430px;width:100%}}
 @media(max-width:600px){.representation-spotlight{padding:21px 18px;margin:25px 0}.representation-spotlight h2{font-size:30px}.spotlight-points{gap:6px}.spotlight-aside{padding:18px}.library-teaser-head h2{font-size:31px}.library-teaser-foot{text-align:left}.legal-articles-grid{grid-template-columns:minmax(0,1fr)}}
 
+
+/* Landing page: services and court representation only; articles live in a separate library. */
+.representation-focus{min-width:0;margin:38px 0 0}
+.representation-focus .representation-spotlight{margin:0;grid-template-columns:minmax(0,1.45fr) minmax(250px,.62fr)}
+.representation-focus .representation-spotlight h2 em{display:block;color:#e3bd84;font-style:normal;margin-top:8px}
+.representation-focus .focus-lead{font-size:16px;line-height:1.78;color:#e1d2bd}
+.representation-focus .focus-review{padding:20px 22px;margin-top:23px;border-left:3px solid #c39b64;background:#fff1}
+.representation-focus .focus-review strong{font:normal 25px Georgia,serif;color:#f3d4a0}
+.representation-focus .focus-review p{margin:9px 0 0;font-size:14px;line-height:1.7;color:#d8c9b5}
+.representation-focus .focus-note{font-size:13px!important;color:#c4b49b!important;margin-top:17px}
+.representation-focus .spotlight-aside .spotlight-contact{line-height:1.55}
+.hero-image-area picture>img.hero-photo,.section-about img,.about-photo img{filter:contrast(1.045) saturate(1.025)}
+@media(max-width:900px){.representation-focus .representation-spotlight{grid-template-columns:minmax(0,1fr)}.representation-focus .spotlight-aside{max-width:420px}}
+@media(max-width:600px){.representation-focus{margin:25px 0 0}.representation-focus .representation-spotlight h2{font-size:29px}.representation-focus .focus-review{padding:17px 14px}}
+
 /* Precise left-aligned price heading for Yandex Android; no clipping at 280–430px. */
 .section-price .eyebrow,.section-price h2{position:relative;left:0;text-align:left}
 @media(max-width:700px){
@@ -508,7 +523,7 @@ body{overflow-x:hidden;overflow-x:clip}
 <p class="eyebrow"><span class="gold-rule"></span> Защита ваших прав — моя работа</p>
 <h1 id="hero-title">Фатима<br/><em>Рустамова</em></h1>
 <p class="hero-subtitle">Судебный юрист · Москва и Московская область</p>
-<p class="hero-text">Судебные споры не решаются универсальными шаблонами. Исследую документы, выстраиваю правовую позицию, готовлю процессуальные документы и представляю интересы в судах Москвы и Московской области.</p>
+<p class="hero-text">Судебные дела веду лично. Помогаю составить иск, подготовить возражения, проверить доказательства, обжаловать решение и защитить интересы в гражданском или арбитражном процессе.</p>
 <div class="hero-actions"><a aria-label="Связаться со мной в MAX" class="btn btn-gold" href="https://max.ru/u/f9LHodD0cOJXOThelfL4zEZsDHL2apF2b_WxxjVt948nXhHX6XZt-opsspM" rel="noopener noreferrer" target="_blank">Связаться со мной<span class="cta-channel">MAX ↗</span></a><a aria-label="Мой контакт — позвонить по номеру +7 909 928-23-98" class="btn btn-outline btn-call" href="tel:+79099282398">Мой контакт<span class="cta-number">+7 (909) 928-23-98</span></a></div>
 <div class="hero-mini"><span>Представительство — от 50 000 ₽ за инстанцию</span><span><a href="/predstavitelstvo-v-sude-moskva.html">Как строится защита ↗</a></span></div>
 </div>
@@ -538,18 +553,19 @@ body{overflow-x:hidden;overflow-x:clip}
 <article class="service-card" data-service="pension"><span class="service-number">06</span><span class="service-icon">§</span><h3>Пенсионные споры</h3><p>Назначение и перерасчёт пенсий, подтверждение стажа, оспаривание отказов и решений.</p><button aria-haspopup="dialog" aria-label="Подробнее: Пенсионные споры" class="service-open" data-service="pension" type="button">Посмотреть вопросы <span aria-hidden="true">↗</span></button></article>
 <article class="service-card service-card-featured" data-service="military"><span class="service-number">07</span><span aria-hidden="true" class="service-icon">✧</span><h3>Военные споры и права семей военнослужащих</h3><p>Положенные выплаты и льготы, споры между родственниками, оспаривание права родителей на выплаты при наличии законных оснований.</p><button aria-haspopup="dialog" aria-label="Подробнее: Военные споры и права семей военнослужащих" class="service-open" data-service="military" type="button">Посмотреть вопросы <span aria-hidden="true">↗</span></button></article>
 </div>
-<div class="services-note"><span>Ваш спор не указан?</span><p>Расскажите о ситуации — обсудим возможный порядок защиты.</p><a href="#contacts">Связаться <span aria-hidden="true">→</span></a></div><div class="legal-articles" id="articles" aria-labelledby="legal-articles-title">
+<div class="services-note"><span>Ваш спор не указан?</span><p>Расскажите о ситуации — обсудим возможный порядок защиты.</p><a href="#contacts">Связаться <span aria-hidden="true">→</span></a></div><section class="representation-focus" id="articles" aria-labelledby="legal-articles-title">
 <div class="representation-spotlight">
- <div><p class="eyebrow">Главная услуга · Москва и Московская область</p><h2>Судебный юрист: защита строится на доказательствах</h2><p>Получили иск, не согласны с решением или готовите обращение в суд? Работа начинается с анализа дела, процессуальных рисков и документов. Дополнительная проверка с ИИ помогает находить пропуски и противоречия, но правовые выводы и ответственность остаются за юристом.</p><div class="spotlight-points"><span>Иск и возражения</span><span>Апелляция и кассация</span><span>Экспертизы и доказательства</span></div></div>
- <div class="spotlight-aside"><p class="spotlight-kicker">Представительство в суде</p><strong>от 50 000 ₽</strong><small>за одну судебную инстанцию</small><a class="btn btn-gold" href="/predstavitelstvo-v-sude-moskva.html">Подробнее об услуге ↗</a><a class="spotlight-contact" href="https://max.ru/u/f9LHodD0cOJXOThelfL4zEZsDHL2apF2b_WxxjVt948nXhHX6XZt-opsspM" target="_blank" rel="noopener noreferrer">Обсудить дело в MAX ↗</a></div>
+ <div>
+  <p class="eyebrow">Судебное представительство · Москва и Московская область</p>
+  <h2 id="legal-articles-title">Судебные дела веду лично. <em>Позиция строится на доказательствах.</em></h2>
+  <p class="focus-lead">В суде недостаточно просто составить иск. Нужно найти сильные и слабые места дела, собрать доказательства, правильно сформулировать требования и подготовиться к возражениям другой стороны. Я лично работаю с материалами дела и представляю интересы доверителей в суде.</p>
+  <div class="spotlight-points" aria-label="Судебные услуги"><span>Иски и возражения</span><span>Представительство в суде</span><span>Апелляция и кассация</span><span>Ходатайства и экспертизы</span></div>
+  <div class="focus-review"><strong>Двойная проверка документов</strong><p>Сначала — правовая оценка документов, норм и судебной практики; затем — дополнительная проверка аргументов и структуры с использованием ИИ. Итоговые выводы перепроверяются юристом. ИИ не заменяет профессиональную ответственность и не гарантирует решение суда.</p></div>
+  <p class="focus-note">Жилищные, семейные, наследственные, земельные и арбитражные споры. Объём работы определяется по делу и договору.</p>
+ </div>
+ <div class="spotlight-aside"><p class="spotlight-kicker">Ваш судебный представитель</p><strong>от 50 000 ₽</strong><small>ведение дела в одной судебной инстанции</small><a class="btn btn-gold" href="/predstavitelstvo-v-sude-moskva.html">Судебные услуги и условия ↗</a><a class="spotlight-contact" href="https://max.ru/u/f9LHodD0cOJXOThelfL4zEZsDHL2apF2b_WxxjVt948nXhHX6XZt-opsspM" target="_blank" rel="noopener noreferrer">Написать о своём деле в MAX ↗</a><a class="spotlight-contact" href="tel:+79099282398">Позвонить +7 (909) 928-23-98</a></div>
 </div>
-<div class="library-teaser-head"><div><p class="eyebrow dark-gold">Судебная практика и процессуальные документы</p><h2 id="legal-articles-title">Полезные разборы <em>для защиты в суде</em></h2><p>Юридические проблемы, судебные позиции и образцы документов. Полный каталог вынесен на отдельную страницу, чтобы главная оставалась удобной.</p></div><a class="library-all-link" href="/sudebnaya-praktika-i-obraztsy.html">Вся юридическая библиотека <span aria-hidden="true">↗</span></a></div>
-<div class="legal-articles-grid">
-<a class="legal-article" href="/samovolnaya-rekonstruktsiya-chastnogo-doma-cherez-sud.html"><span>Новая статья · 11 ноября 2026 года · Земельные и имущественные споры</span><strong>Самовольная реконструкция частного дома: как сохранить дом через суд</strong><span class="legal-article-more">Читать разбор ↗</span></a>
-<a class="legal-article" href="/servitut-dlya-prohoda-cherez-sosedniy-uchastok.html"><span>Новая статья · 5 ноября 2026 · Земельные споры</span><strong>Сервитут для прохода и проезда через соседний участок: как установить через суд</strong><span class="legal-article-more">Читать разбор ↗</span></a>
-<a class="legal-article" href="/vzyskanie-sudebnyh-rashodov-na-predstavitelya.html"><span>Судебные расходы</span><strong>Как взыскать расходы на юриста после суда</strong><span class="legal-article-more">Читать разбор ↗</span></a>
-</div><p class="library-teaser-foot"><a href="/sudebnaya-praktika-i-obraztsy.html">Смотреть все 26 материалов по жилищным, семейным, наследственным, земельным и арбитражным спорам ↗</a></p>
-</div>
+</section>
 </div>
 </section><dialog aria-describedby="service-dialog-description" aria-labelledby="service-dialog-title" class="service-dialog" id="service-dialog">
 <div class="service-dialog-inner">

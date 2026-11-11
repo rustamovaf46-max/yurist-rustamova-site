@@ -192,11 +192,11 @@ jobs:
               raise RuntimeError(f"Library cards out of sync. Missing: {sorted(library_pages-card_set)}; extra: {sorted(card_set-library_pages)}; duplicates: {duplicates}")
           if catalog_url not in home.links or service_url not in home.links:
               raise RuntimeError("На главной нет ссылок на библиотеку и услугу представительства.")
-          if not home.cards or (set(home.cards) - library_pages) or len(home.cards) != len(set(home.cards)):
-              raise RuntimeError("Избранные карточки главной пусты, дублируются или ведут не в библиотеку.")
-          if not set(home.cards).issubset(catalog.links):
-              raise RuntimeError("На главной есть статья вне библиотеки.")
-          print(f"LIBRARY PASS: {len(library_pages)} articles in catalog, {len(home.cards)} curated cards on homepage.")
+          if home.cards:
+              raise RuntimeError(f"На главной должны быть только судебные услуги, но обнаружены карточки статей: {home.cards}")
+          if 'id="legal-articles-title"' not in homepage or 'class="representation-focus"' not in homepage:
+              raise RuntimeError("На главной отсутствует выделенный блок судебного представительства.")
+          print(f"LIBRARY PASS: {len(library_pages)} articles in catalog, no article cards on homepage, featured court representation.")
 
           for url in sorted(expected_articles):
               page_html, page_headers = fetch(url + "?run=" + run_id)
@@ -216,7 +216,7 @@ jobs:
               if not page.phone_links or any(href != PHONE for href in page.phone_links):
                   raise RuntimeError(f"Живая телефонная ссылка отсутствует или расходится: {url}")
               print("PASS:", url, "HTTP 200, exact GitHub HTML, H1, indexable, live MAX/phone, catalog card, sitemap")
-          print(f"VERIFIED: {len(library_pages)} legal articles, sitemap identical to GitHub, {len(catalog.cards)} catalog cards and {len(home.cards)} homepage highlights on REG.RU")
+          print(f"VERIFIED: {len(library_pages)} legal articles, sitemap identical to GitHub, {len(catalog.cards)} catalog cards and dedicated court representation on REG.RU")
           print("This checks technical accessibility, not actual Yandex/Google indexing.")
           PY
 
