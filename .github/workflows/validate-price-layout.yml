@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Python and headless browser
         run: |
-          python -m pip install playwright==1.55.0
+          python -m pip install --upgrade playwright
           python -m playwright install chromium --with-deps
       - name: Verify mobile gutters, overflow, opening position and price layout
         shell: bash
