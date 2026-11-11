@@ -87,9 +87,9 @@ jobs:
                   assert expected_articles, "no articles in sitemap"
                   actual_articles = {urljoin(base, href) for href in articles.evaluate_all("cards => cards.map(card => card.getAttribute('href'))")}
                   featured_articles = {
-                      base + "/samovolnaya-rekonstruktsiya-chastnogo-doma-cherez-sud.html",
-                      base + "/servitut-dlya-prohoda-cherez-sosedniy-uchastok.html",
-                      base + "/vzyskanie-sudebnyh-rashodov-na-predstavitelya.html",
+                      base + "samovolnaya-rekonstruktsiya-chastnogo-doma-cherez-sud.html",
+                      base + "servitut-dlya-prohoda-cherez-sosedniy-uchastok.html",
+                      base + "vzyskanie-sudebnyh-rashodov-na-predstavitelya.html",
                   }
                   assert articles.count() == 3 and actual_articles == featured_articles, f"{width}: homepage featured articles differ: {actual_articles}"
                   assert page.locator('.representation-focus a[href="/predstavitelstvo-v-sude-moskva.html"]').count() >= 1, f"{width}: highlighted court representation is missing"
