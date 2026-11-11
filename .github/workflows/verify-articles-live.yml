@@ -8,6 +8,11 @@ on:
     paths:
       - .github/workflows/verify-articles-live.yml
       - yandex_f716343b29761cf2.html
+      - '*.html'
+      - sitemap.xml
+      - robots.txt
+      - 'assets/**'
+      - scripts/reg-ru-deploy.sh
 
 permissions:
   contents: read
