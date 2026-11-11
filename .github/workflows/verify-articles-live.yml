@@ -102,6 +102,8 @@ jobs:
                   parsed = urlparse(url)
                   if parsed.scheme != "https" or parsed.netloc != urlparse(BASE).netloc:
                       raise RuntimeError(f"Foreign or non-HTTPS URL in sitemap: {url}")
+                  if url in urls:
+                      raise RuntimeError(f"Duplicate URL in sitemap: {url}")
                   urls.add(url)
               return urls
 
@@ -231,34 +233,100 @@ jobs:
           from urllib.parse import urlparse
           from urllib.request import Request, urlopen
           from xml.etree import ElementTree as ET
+          import hashlib
           import os
+          import re
+
           now = datetime.now(ZoneInfo("Europe/Moscow"))
           if now.hour < 12:
               print("До 12:00 МСК проверка новой статьи ещё не обязательна:", now.isoformat())
               raise SystemExit(0)
+
           expected_day = now.date().isoformat()
           base = "https://xn--80aafwvmkbibjcl2m.xn--p1ai"
+          source_sitemap = Path("sitemap.xml").read_bytes()
+          root = ET.fromstring(source_sitemap)
+          urls = []
+          for item in root.iter():
+              if item.tag.endswith("loc") and item.text:
+                  urls.append(item.text.strip())
+          if len(urls) != len(set(urls)):
+              raise SystemExit("::error::В sitemap.xml обнаружены повторяющиеся URL.")
+          if len(urls) != 28:
+              print("Sitemap URL count:", len(urls), "(проверено на дубли)")
+
           candidates = []
-          for node in ET.parse("sitemap.xml").getroot():
-              url = node.findtext("{*}loc")
-              date = node.findtext("{*}lastmod", "")
-              if url and date.startswith(expected_day) and urlparse(url).path.endswith(".html") and "privacy-policy" not in url:
-                  candidates.append(url)
+          canonical_seen = set()
+          for url in urls:
+              parsed = urlparse(url)
+              if parsed.scheme != "https" or parsed.netloc != urlparse(base).netloc:
+                  raise SystemExit("::error::В sitemap обнаружен чужой или не-HTTPS URL: " + url)
+              if not parsed.path.endswith(".html") or parsed.path.endswith("/privacy-policy.html"):
+                  continue
+              filename = Path(parsed.path).name
+              local_file = Path(filename)
+              if not local_file.is_file():
+                  raise SystemExit("::error::Нет исходного HTML из sitemap в main: " + filename)
+              source = local_file.read_bytes()
+              source_text = source.decode("utf-8")
+              match = re.search(r'"datePublished"\s*:\s*"(\d{4}-\d{2}-\d{2})"', source_text)
+              if not match or match.group(1) != expected_day:
+                  continue
+
+              h1_count = len(re.findall(r"<h1\b", source_text, re.IGNORECASE))
+              if h1_count != 1:
+                  raise SystemExit("::error::У сегодняшней статьи должен быть ровно один H1: " + filename)
+
+              canonical_tags = [
+                  tag for tag in re.findall(r"<link\b[^>]*>", source_text, re.IGNORECASE)
+                  if re.search(r'\brel=["\']canonical["\']', tag, re.IGNORECASE)
+              ]
+              if len(canonical_tags) != 1:
+                  raise SystemExit("::error::У сегодняшней статьи отсутствует единственный canonical: " + filename)
+              canonical_match = re.search(r'\bhref=["\']([^"\']+)["\']', canonical_tags[0], re.IGNORECASE)
+              if not canonical_match or canonical_match.group(1) != url:
+                  raise SystemExit("::error::Canonical сегодняшней статьи не совпадает с URL sitemap: " + filename)
+              canonical = canonical_match.group(1)
+              if canonical in canonical_seen:
+                  raise SystemExit("::error::Дублирующий canonical у сегодняшних статей: " + canonical)
+              canonical_seen.add(canonical)
+              candidates.append((url, local_file, source, hashlib.sha256(source).hexdigest()))
+
           if not candidates:
-              raise SystemExit("::error::Сегодняшней SEO-статьи в sitemap.xml нет. Дата МСК: " + expected_day)
-          for url in candidates:
-              filename = Path(urlparse(url).path).name
-              text = Path(filename).read_text(encoding="utf-8")
-              if ('"datePublished":"' + expected_day + '"') not in text:
-                  raise SystemExit("::error::Дата публикации Article не совпадает с датой МСК: " + filename)
-              with urlopen(Request(url + "?fresh=" + os.environ.get("GITHUB_RUN_ID", "check"),
-                                   headers={"Cache-Control": "no-cache", "User-Agent": "Mozilla/5.0 (Linux; Android 14)"}), timeout=30) as response:
-                  if response.status != 200:
-                      raise SystemExit("::error::Статья недоступна на REG.RU: " + url)
-                  body = response.read().decode("utf-8")
-              if '"datePublished":"' + expected_day + '"' not in body:
-                  raise SystemExit("::error::Статья на REG.RU не обновлена: " + url)
-              print("TODAY LIVE SEO:", url, expected_day)
+              raise SystemExit("::error::В sitemap нет SEO-статьи с datePublished за сегодня. Дата МСК: " + expected_day)
+          if len({item[0] for item in candidates}) != len(candidates):
+              raise SystemExit("::error::Повторяющийся URL сегодняшней статьи.")
+
+          request = Request(
+              base + "/sitemap.xml?daily=" + os.environ.get("GITHUB_RUN_ID", "check"),
+              headers={"Cache-Control": "no-cache", "User-Agent": "Mozilla/5.0"}
+          )
+          with urlopen(request, timeout=30) as response:
+              final = urlparse(response.url)
+              if response.status != 200 or final.scheme != "https" or final.netloc != urlparse(base).netloc:
+                  raise SystemExit("::error::Живой sitemap не вернулся по HTTPS с HTTP 200.")
+              live_sitemap = response.read()
+          if live_sitemap != source_sitemap:
+              raise SystemExit("::error::Живой sitemap REG.RU отличается от GitHub main.")
+
+          for url, local_file, source, digest in candidates:
+              request = Request(
+                  url + "?fresh=" + os.environ.get("GITHUB_RUN_ID", "check"),
+                  headers={"Cache-Control": "no-cache", "User-Agent": "Mozilla/5.0 (Linux; Android 14)"}
+              )
+              with urlopen(request, timeout=30) as response:
+                  final = urlparse(response.url)
+                  expected = urlparse(url)
+                  if response.status != 200 or final.scheme != "https" or final.netloc != expected.netloc or final.path != expected.path:
+                      raise SystemExit("::error::Статья не вернулась по исходному HTTPS URL с HTTP 200: " + url)
+                  if "text/html" not in response.headers.get("Content-Type", "").lower():
+                      raise SystemExit("::error::Сегодняшняя статья не имеет Content-Type text/html: " + url)
+                  live = response.read()
+              if live != source:
+                  raise SystemExit("::error::Опубликованный HTML сегодняшней статьи отличается от GitHub main: " + url)
+              print("TODAY LIVE SEO:", url, expected_day, "HTTP 200, exact HTML, unique URL/canonical, H1=1, SHA256=" + digest)
+
+          print("DAILY PUBLICATION PASS:", expected_day, "unique live articles:", len(candidates))
           PY
 
       - name: Проверить файл подтверждения Яндекс.Вебмастера на REG.RU
