@@ -1,6 +1,6 @@
 #!/bin/sh
 # Синхронизация опубликованных SEO-статей, sitemap и robots.txt из main.
-# НЕ менять главную страницу, старые фотографии, видео, оформление и контакты.
+# Сохранять дизайн и контакты; одобренные портреты разворачивать до обновления HTML.
 set -eu
 umask 077
 DOMAIN='xn--80aafwvmkbibjcl2m.xn--p1ai'
@@ -45,7 +45,7 @@ if [ "$BYTES" -gt 52428800 ] || [ "$BYTES" -lt 1000 ]; then
 fi
 unzip -q "$WORK_DIR/main.zip" -d "$WORK_DIR"
 SRC_DIR="$WORK_DIR/yurist-rustamova-site-main"
-for mandatory in index.html robots.txt sitemap.xml assets/fatima-portrait.webp assets/fatima-promo.mp4; do
+for mandatory in index.html robots.txt sitemap.xml assets/fatima-portrait.webp assets/fatima-promo.mp4 assets/fatima-hero-sharp.webp assets/fatima-portrait-natural.webp; do
   if [ ! -s "$SRC_DIR/$mandatory" ] || [ -L "$SRC_DIR/$mandatory" ]; then
     echo "ОШИБКА: повреждён файл $mandatory" >&2
     exit 1
@@ -88,12 +88,10 @@ publish_file() {
   mv -f "$temp_file" "$target_file"
   COUNT=$((COUNT + 1))
 }
-# Обновляем новый портрет до index.html, чтобы не было битой картинки.
-if [ ! -s "$SRC_DIR/assets/fatima-white-suit-hero.avif" ]; then
-  echo 'ОШИБКА: новый портрет отсутствует в архиве; публикация остановлена.' >&2
-  exit 1
-fi
-publish_file "$SRC_DIR/assets/fatima-white-suit-hero.avif"
+# Разворачиваем оба подтверждённых портрета ДО публикации HTML.
+# Прежние файлы сохраняем в репозитории на случай отката.
+publish_file "$SRC_DIR/assets/fatima-hero-sharp.webp"
+publish_file "$SRC_DIR/assets/fatima-portrait-natural.webp"
 for f in "$SRC_DIR"/*.html; do
   [ -f "$f" ] || continue
   case "${f##*/}" in
