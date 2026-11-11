@@ -1,4 +1,5 @@
 name: SEO — уведомление IndexNow после публикации
+# Контроль резервного события workflow_run аудита REG.RU; логика IndexNow не изменена.
 on:
   push:
     branches: [main]
