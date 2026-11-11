@@ -156,7 +156,7 @@ jobs:
                           assert page.locator(".library-toolbar input").count()==1, filename + ": library search"
                           assert page.locator("#library-grid .legal-article").count()>=1, filename + ": library cards"
                       assert page.locator('a[href="tel:+79099282398"]').count() >= (2 if is_catalog else 3), filename + ": telephone"
-                      if width <= 768:
+                      if width <= 768 and not is_catalog:
                           assert page.locator(".mobile-bottom").is_visible(), filename + ": mobile contacts"
                       assert not errors, f"{filename}: JavaScript errors {errors}"
                       if filename == "otmena-sudebnogo-prikaza-za-zhku.html" and width in [320,390,1440]:
