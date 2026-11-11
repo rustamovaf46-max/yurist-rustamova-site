@@ -3,7 +3,7 @@ name: Проверка опубликованных SEO-статей на REG.RU
 on:
   workflow_dispatch:
   schedule:
-    - cron: '5,47 * * * *' # Проверка сразу после почасовой синхронизации и резервная проверка
+    - cron: '13,47 * * * *' # Проверка сразу после почасовой синхронизации и резервная проверка
   push:
     paths:
       - .github/workflows/verify-articles-live.yml
