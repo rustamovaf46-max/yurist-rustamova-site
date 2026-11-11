@@ -75,6 +75,8 @@ jobs:
           import os
 
           BASE = "https://xn--80aafwvmkbibjcl2m.xn--p1ai"
+          MAX = "https://max.ru/u/f9LHodD0cOJXOThelfL4zEZsDHL2apF2b_WxxjVt948nXhHX6XZt-opsspM"
+          PHONE = "tel:+79099282398"
           UA = "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36 YaBrowser/24.12"
           run_id = os.environ.get("GITHUB_RUN_ID", "check")
 
@@ -110,6 +112,8 @@ jobs:
                   self.cards = []
                   self.has_h1 = False
                   self.noindex = False
+                  self.max_links = []
+                  self.phone_links = []
 
               def handle_starttag(self, tag, attrs):
                   props = dict(attrs)
@@ -119,13 +123,20 @@ jobs:
                       if "noindex" in props.get("content", "").lower():
                           self.noindex = True
                   if tag == "a" and props.get("href"):
-                      absolute = urljoin(BASE + "/", props["href"]).split("#")[0].split("?")[0]
+                      href = props["href"]
+                      absolute = urljoin(BASE + "/", href).split("#")[0].split("?")[0]
                       self.links.add(absolute)
                       if "legal-article" in props.get("class", "").split():
                           self.cards.append(absolute)
+                      if urlparse(href).hostname in ("max.ru", "www.max.ru"):
+                          self.max_links.append(href)
+                      if href.lower().startswith("tel:"):
+                          self.phone_links.append(href)
 
           expected = sitemap_urls(Path("sitemap.xml").read_text(encoding="utf-8"))
           actual, _ = fetch(BASE + "/sitemap.xml?run=" + run_id)
+          if actual.encode("utf-8") != Path("sitemap.xml").read_bytes():
+              raise RuntimeError("Живой sitemap.xml побайтово отличается от файла в GitHub main.")
           live = sitemap_urls(actual)
           if expected != live:
               raise RuntimeError(f"REG.RU sitemap differs from GitHub. Missing: {sorted(expected-live)}; extra: {sorted(live-expected)}")
@@ -135,8 +146,16 @@ jobs:
           if not expected_articles:
               raise RuntimeError("No SEO articles in sitemap")
           homepage, headers = fetch(BASE + "/?run=" + run_id)
+          if homepage.encode("utf-8") != Path("index.html").read_bytes():
+              raise RuntimeError("Живой index.html побайтово отличается от GitHub main.")
           home = Page()
           home.feed(homepage)
+          if 'name="viewport"' not in homepage.lower():
+              raise RuntimeError("В живой главной отсутствует viewport для мобильного отображения.")
+          if not home.max_links or any(href != MAX for href in home.max_links):
+              raise RuntimeError("Живые ссылки MAX на главной отсутствуют или ведут не на профиль владельца.")
+          if not home.phone_links or any(href != PHONE for href in home.phone_links):
+              raise RuntimeError("Живые телефонные ссылки на главной отсутствуют или расходятся.")
           if home.noindex:
               raise RuntimeError("Homepage has noindex")
           if 'id="legal-articles-title"' not in homepage or 'href="#articles"' not in homepage:
@@ -154,11 +173,20 @@ jobs:
               page_html, page_headers = fetch(url + "?run=" + run_id)
               if "text/html" not in page_headers.get("Content-Type", "").lower():
                   raise RuntimeError(f"Not HTML: {url}")
+              filename = Path(urlparse(url).path).name
+              if page_html.encode("utf-8") != Path(filename).read_bytes():
+                  raise RuntimeError(f"Опубликованный HTML отличается от GitHub main: {filename}")
               page = Page()
               page.feed(page_html)
               if not page.has_h1 or page.noindex:
                   raise RuntimeError(f"No H1 or noindex: {url}")
-              print("PASS:", url, "HTTP 200, H1, indexable, homepage card, sitemap")
+              if 'name="viewport"' not in page_html.lower():
+                  raise RuntimeError(f"В статье отсутствует viewport: {url}")
+              if not page.max_links or any(href != MAX for href in page.max_links):
+                  raise RuntimeError(f"Живая ссылка MAX отсутствует или ведёт не на профиль владельца: {url}")
+              if not page.phone_links or any(href != PHONE for href in page.phone_links):
+                  raise RuntimeError(f"Живая телефонная ссылка отсутствует или расходится: {url}")
+              print("PASS:", url, "HTTP 200, exact GitHub HTML, H1, indexable, live MAX/phone, homepage card, sitemap")
           print(f"VERIFIED: {len(expected_articles)} SEO articles, sitemap identical to GitHub, and {len(home.cards)} homepage cards on REG.RU")
           print("This checks technical accessibility, not actual Yandex/Google indexing.")
           PY
