@@ -170,16 +170,33 @@ jobs:
               raise RuntimeError("Живые телефонные ссылки на главной отсутствуют или расходятся.")
           if home.noindex:
               raise RuntimeError("Homepage has noindex")
-          if 'id="legal-articles-title"' not in homepage or 'href="#articles"' not in homepage:
+          if 'id="legal-articles-title"' not in homepage or 'href="/sudebnaya-praktika-i-obraztsy.html"' not in homepage:
               raise RuntimeError("Homepage article section or mobile navigation missing")
           if "Precise left-aligned price heading" not in homepage:
               raise RuntimeError("Mobile price heading CSS missing")
-          if set(expected_articles) != set(home.cards) or len(home.cards) != len(expected_articles):
-              card_set = set(home.cards)
-              duplicates = sorted(u for u in card_set if home.cards.count(u) > 1)
-              raise RuntimeError(f"Article cards out of sync. Missing: {sorted(expected_articles-card_set)}; extra: {sorted(card_set-expected_articles)}; duplicates: {duplicates}")
-          if expected_articles - home.links:
-              raise RuntimeError(f"Some article links missing from homepage: {sorted(expected_articles-home.links)}")
+          # Полный индекс статей теперь находится на отдельной странице библиотеки;
+          # главная содержит избранные карточки и самостоятельную страницу услуги.
+          catalog_url = BASE + "/sudebnaya-praktika-i-obraztsy.html"
+          service_url = BASE + "/predstavitelstvo-v-sude-moskva.html"
+          library_pages = expected_articles - {catalog_url, service_url}
+          catalog_html, _ = fetch(catalog_url + "?run=" + run_id)
+          if catalog_html.encode("utf-8") != Path("sudebnaya-praktika-i-obraztsy.html").read_bytes():
+              raise RuntimeError("Живая библиотека расходится с GitHub main.")
+          catalog = Page()
+          catalog.feed(catalog_html)
+          if catalog.noindex or not catalog.has_h1:
+              raise RuntimeError("Библиотека закрыта от индексации или отсутствует H1.")
+          if set(catalog.cards) != library_pages or len(catalog.cards) != len(library_pages):
+              card_set = set(catalog.cards)
+              duplicates = sorted(u for u in card_set if catalog.cards.count(u) > 1)
+              raise RuntimeError(f"Library cards out of sync. Missing: {sorted(library_pages-card_set)}; extra: {sorted(card_set-library_pages)}; duplicates: {duplicates}")
+          if catalog_url not in home.links or service_url not in home.links:
+              raise RuntimeError("На главной нет ссылок на библиотеку и услугу представительства.")
+          if not home.cards or (set(home.cards) - library_pages) or len(home.cards) != len(set(home.cards)):
+              raise RuntimeError("Избранные карточки главной пусты, дублируются или ведут не в библиотеку.")
+          if not set(home.cards).issubset(catalog.links):
+              raise RuntimeError("На главной есть статья вне библиотеки.")
+          print(f"LIBRARY PASS: {len(library_pages)} articles in catalog, {len(home.cards)} curated cards on homepage.")
 
           for url in sorted(expected_articles):
               page_html, page_headers = fetch(url + "?run=" + run_id)
@@ -199,7 +216,7 @@ jobs:
               if not page.phone_links or any(href != PHONE for href in page.phone_links):
                   raise RuntimeError(f"Живая телефонная ссылка отсутствует или расходится: {url}")
               print("PASS:", url, "HTTP 200, exact GitHub HTML, H1, indexable, live MAX/phone, homepage card, sitemap")
-          print(f"VERIFIED: {len(expected_articles)} SEO articles, sitemap identical to GitHub, and {len(home.cards)} homepage cards on REG.RU")
+          print(f"VERIFIED: {len(library_pages)} legal articles, sitemap identical to GitHub, {len(catalog.cards)} catalog cards and {len(home.cards)} homepage highlights on REG.RU")
           print("This checks technical accessibility, not actual Yandex/Google indexing.")
           PY
 

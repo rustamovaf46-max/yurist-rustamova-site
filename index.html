@@ -268,6 +268,14 @@ html{scroll-behavior:auto;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 @media(max-width:1000px){.legal-articles-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.legal-articles{margin-top:26px}.legal-articles-grid{grid-template-columns:minmax(0,1fr);gap:12px}.legal-article{min-height:0;padding:18px 17px;gap:9px}.legal-article strong{font-size:21px}}
 
+
+/* Compact editorial library and prominent court-representation offer. */
+.representation-spotlight{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,.7fr);align-items:center;gap:28px;padding:clamp(24px,4vw,46px);margin:38px 0;background:radial-gradient(circle at 95% 10%,#3e3325,#211c17 58%,#171511);border:1px solid #997446;color:#f6ead9}
+.representation-spotlight .eyebrow{color:#d9ad74}.representation-spotlight h2{color:#f8e7d0;font:normal clamp(29px,3.5vw,43px)/1.14 Georgia,serif;margin:10px 0 14px}.representation-spotlight p{color:#d9cbb8;line-height:1.7;max-width:720px}.spotlight-points{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}.spotlight-points span{border:1px solid #766044;color:#ebd5b7;padding:8px 10px;font-size:12px}.spotlight-aside{border:1px solid #a77d4b;padding:22px;background:#16130f}.spotlight-kicker{color:#cbb591!important;font-size:12px!important}.spotlight-aside strong{display:block;font:normal clamp(28px,3.5vw,38px) Georgia,serif;color:#f2c991;white-space:nowrap}.spotlight-aside small{display:block;font-size:12px;color:#bcb09e;margin:7px 0 22px}.spotlight-aside .btn{display:block;text-align:center;white-space:normal;padding:15px 10px;font-size:13px}.spotlight-contact{display:block;color:#f0c58b;margin-top:17px;text-align:center;font-size:13px}
+.library-teaser-head{display:flex;align-items:end;justify-content:space-between;gap:28px;flex-wrap:wrap;margin:32px 0 22px}.library-teaser-head h2{font:normal clamp(28px,3.2vw,43px)/1.18 Georgia,serif;color:#291e15;margin:8px 0 10px}.library-teaser-head h2 em{color:#9b7141}.library-teaser-head p:not(.eyebrow){max-width:730px;color:#5f5448}.library-all-link{font-size:14px;font-weight:bold;color:#845a2c;text-decoration:underline;text-underline-offset:4px;padding-bottom:8px}.library-teaser-foot{margin:20px 0 0;text-align:right;font-size:14px}.library-teaser-foot a{color:#76512c;font-weight:bold;text-decoration:underline;text-underline-offset:4px}.hero-mini a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:900px){.representation-spotlight{grid-template-columns:1fr}.spotlight-aside{max-width:430px;width:100%}}
+@media(max-width:600px){.representation-spotlight{padding:21px 18px;margin:25px 0}.representation-spotlight h2{font-size:30px}.spotlight-points{gap:6px}.spotlight-aside{padding:18px}.library-teaser-head h2{font-size:31px}.library-teaser-foot{text-align:left}.legal-articles-grid{grid-template-columns:minmax(0,1fr)}}
+
 /* Precise left-aligned price heading for Yandex Android; no clipping at 280–430px. */
 .section-price .eyebrow,.section-price h2{position:relative;left:0;text-align:left}
 @media(max-width:700px){
@@ -483,14 +491,14 @@ body{overflow-x:hidden;overflow-x:clip}
 <span><strong>Фатима Рустамова</strong><small>Юрист · Судебный представитель</small></span>
 </a>
 <nav aria-label="Основная навигация" class="desktop-nav">
-<a href="#about">Обо мне</a><a href="#services">Услуги</a><a href="#articles">Статьи</a><a href="#video">Видео</a><a href="#price">Стоимость</a><a href="#how">Как работаю</a><a href="#contacts">Контакты</a>
+<a href="#about">Обо мне</a><a href="#services">Услуги</a><a href="/sudebnaya-praktika-i-obraztsy.html">Практика и образцы</a><a href="#video">Видео</a><a href="#price">Стоимость</a><a href="#how">Как работаю</a><a href="#contacts">Контакты</a>
 </nav>
 <a aria-label="Мой контакт — набрать +7 (909) 928-23-98" class="header-phone" href="tel:+79099282398">+7 (909) 928-23-98</a>
 <a class="top-cta" href="https://max.ru/u/f9LHodD0cOJXOThelfL4zEZsDHL2apF2b_WxxjVt948nXhHX6XZt-opsspM" rel="noopener noreferrer" target="_blank">Связаться со мной ↗</a>
 <button aria-controls="mobile-nav" aria-expanded="false" aria-label="Открыть меню" class="menu-toggle"><span></span><span></span><span></span></button>
 </div>
 <nav aria-label="Мобильная навигация" class="mobile-nav" hidden="" id="mobile-nav">
-<a href="#about">Обо мне</a><a href="#services">Услуги</a><a href="#articles">Статьи</a><a href="#video">Видео</a><a href="#price">Стоимость</a><a href="#how">Как работаю</a><a href="#contacts">Контакты</a>
+<a href="#about">Обо мне</a><a href="#services">Услуги</a><a href="/sudebnaya-praktika-i-obraztsy.html">Практика и образцы</a><a href="#video">Видео</a><a href="#price">Стоимость</a><a href="#how">Как работаю</a><a href="#contacts">Контакты</a>
 </nav>
 </header>
 <main id="main">
@@ -499,10 +507,10 @@ body{overflow-x:hidden;overflow-x:clip}
 <div class="hero-copy">
 <p class="eyebrow"><span class="gold-rule"></span> Защита ваших прав — моя работа</p>
 <h1 id="hero-title">Фатима<br/><em>Рустамова</em></h1>
-<p class="hero-subtitle">Профессиональный защитник</p>
-<p class="hero-text">Судебный юрист в Москве и Московской области. Представительство в суде по гражданским и арбитражным спорам, подготовка документов и защита ваших интересов.</p>
+<p class="hero-subtitle">Судебный юрист · Москва и Московская область</p>
+<p class="hero-text">Судебные споры не решаются универсальными шаблонами. Исследую документы, выстраиваю правовую позицию, готовлю процессуальные документы и представляю интересы в судах Москвы и Московской области.</p>
 <div class="hero-actions"><a aria-label="Связаться со мной в MAX" class="btn btn-gold" href="https://max.ru/u/f9LHodD0cOJXOThelfL4zEZsDHL2apF2b_WxxjVt948nXhHX6XZt-opsspM" rel="noopener noreferrer" target="_blank">Связаться со мной<span class="cta-channel">MAX ↗</span></a><a aria-label="Мой контакт — позвонить по номеру +7 909 928-23-98" class="btn btn-outline btn-call" href="tel:+79099282398">Мой контакт<span class="cta-number">+7 (909) 928-23-98</span></a></div>
-<div class="hero-mini"><span>Москва и Московская область</span><span>Представительство в суде</span></div>
+<div class="hero-mini"><span>Представительство — от 50 000 ₽ за инстанцию</span><span><a href="/predstavitelstvo-v-sude-moskva.html">Как строится защита ↗</a></span></div>
 </div>
 <div class="hero-image-area">
 <picture><img alt="Стилизованный портрет Фатимы Рустамовой в белом костюме в элегантном юридическом кабинете" class="hero-photo" decoding="async" fetchpriority="high" height="875" loading="eager" src="assets/fatima-white-suit-hero.avif" width="700"/></picture>
@@ -531,36 +539,16 @@ body{overflow-x:hidden;overflow-x:clip}
 <article class="service-card service-card-featured" data-service="military"><span class="service-number">07</span><span aria-hidden="true" class="service-icon">✧</span><h3>Военные споры и права семей военнослужащих</h3><p>Положенные выплаты и льготы, споры между родственниками, оспаривание права родителей на выплаты при наличии законных оснований.</p><button aria-haspopup="dialog" aria-label="Подробнее: Военные споры и права семей военнослужащих" class="service-open" data-service="military" type="button">Посмотреть вопросы <span aria-hidden="true">↗</span></button></article>
 </div>
 <div class="services-note"><span>Ваш спор не указан?</span><p>Расскажите о ситуации — обсудим возможный порядок защиты.</p><a href="#contacts">Связаться <span aria-hidden="true">→</span></a></div><div class="legal-articles" id="articles" aria-labelledby="legal-articles-title">
-  <h3 id="legal-articles-title">Юридические материалы и услуги</h3>
-  <p class="legal-articles-intro">О судебном представительстве и конкретных вопросах, с которыми обращаются за защитой своих прав.</p>
-  <div class="legal-articles-grid">
-    <a class="legal-article" href="/predstavitelstvo-v-sude-moskva.html"><span>Юридическая услуга · Москва и МО</span><strong>Судебный юрист: представительство в суде, условия работы и стоимость</strong><span class="legal-article-more">Об услуге ↗</span></a>
-    <a class="legal-article" href="/samovolnaya-rekonstruktsiya-chastnogo-doma-cherez-sud.html"><span>Новая статья · 11 ноября 2026 года · Земельные и имущественные споры</span><strong>Самовольная реконструкция частного дома: как сохранить дом через суд</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/vzyskanie-ubytkov-s-direktora-ooo.html"><span>Новая статья · 6 ноября 2026 года · Арбитражные споры</span><strong>Взыскание убытков с директора ООО: основания и доказательства</strong><span class="legal-article-more">Читать статью ↗</span></a>
-        <a class="legal-article" href="/osparivanie-arhivnoy-kadastrovoy-stoimosti-dlya-naloga.html"><span>Новая статья · 10 ноября 2026 года · Земельные и имущественные споры</span><strong>Как оспорить архивную кадастровую стоимость и пересчитать налог</strong><span class="legal-article-more">Читать статью ↗</span></a>
-<a class="legal-article" href="/servitut-dlya-prohoda-cherez-sosedniy-uchastok.html"><span>Новая статья · 5 ноября 2026 · Земельные споры</span><strong>Сервитут для прохода и проезда через соседний участок: как установить через суд</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/vykup-neznachitelnoy-doli-v-kvartire-cherez-sud.html"><span>Новая статья · 4 ноября · Жилищные споры</span><strong>Выкуп незначительной доли в квартире через суд: условия и доказательства</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/poryadok-obshcheniya-s-rebenkom-posle-razvoda.html"><span>Новая статья · 1 ноября · Семейные споры</span><strong>Порядок общения с ребёнком после развода: как установить график через суд</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/razdel-kreditov-i-dolgov-suprugov.html"><span>Новая статья · 31 октября · Семейные споры</span><strong>Раздел кредитов и долгов супругов после развода: что признают общим</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/isklyuchenie-uchastnika-iz-ooo-cherez-sud.html"><span>Корпоративные споры</span><strong>Исключение участника из ООО через суд: основания и доказательства</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/vzyskanie-dolga-po-dogovoru-postavki.html"><span>Арбитражные споры</span><strong>Взыскание долга по договору поставки: как подготовить иск в арбитражный суд</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/fakticheskoe-prinyatie-nasledstva-cherez-sud.html"><span>Наследственные споры</span><strong>Фактическое принятие наследства: как признать право через суд</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/otkaz-sfr-vklyuchit-stazh-v-pensiyu.html"><span>Пенсионные споры</span><strong>СФР не включил периоды работы в стаж: как защитить право на пенсию</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/samovolnaya-pereplanirovka-kvartiry-cherez-sud.html"><span>Жилищные споры</span><strong>Самовольная перепланировка квартиры: как узаконить через суд</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/obyazatelnaya-dolya-v-nasledstve.html"><span>Наследственные споры</span><strong>Обязательная доля в наследстве: кому положена и как рассчитать</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/ispravlenie-reestrovoy-oshibki-granits-uchastka.html"><span>Земельные споры</span><strong>Реестровая ошибка в границах участка: как исправить через суд</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/vyselenie-byvshego-supruga-iz-kvartiry.html"><span>Жилищные споры</span><strong>Как выселить бывшего супруга из квартиры собственника</strong><span class="legal-article-more">Читать статью ↗</span></a><a class="legal-article" href="/osparivanie-zaveshchaniya-v-sude.html"><span>Наследственные споры</span><strong>Оспаривание завещания: основания, доказательства и экспертиза</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/zaliv-kvartiry-sosed-ili-upravlyayushchaya-kompaniya.html"><span>Жилищные споры</span><strong>Залив квартиры: кто возместит ущерб — сосед или управляющая компания</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/otmena-sudebnogo-prikaza-za-zhku.html"><span>Жилищные споры</span><strong>Судебный приказ за ЖКУ: как отменить, если узнали от пристава</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/razdel-imushchestva-posle-razvoda-srok-davnosti.html"><span>Семейные споры</span><strong>Раздел имущества после развода: как считать срок давности</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/vzyskanie-sudebnyh-rashodov-na-predstavitelya.html"><span>Судебные расходы</span><strong>Как взыскать расходы на юриста после суда</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/alimenty-v-tverdoy-denezhnoy-summe.html"><span>Семейные споры</span><strong>Алименты в твёрдой денежной сумме: как обосновать размер в суде</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/poryadok-polzovaniya-kvartiroy.html"><span>Жилищные споры</span><strong>Порядок пользования квартирой через суд</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/vselenie-v-kvartiru-cherez-sud.html"><span>Жилищные споры</span><strong>Вселение в квартиру через суд</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/vosstanovlenie-sroka-prinyatiya-nasledstva.html"><span>Наследственные споры</span><strong>Восстановление срока принятия наследства</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/opredelenie-mesta-zhitelstva-rebenka-cherez-sud.html"><span>Семейные споры</span><strong>Определение места жительства ребёнка через суд</strong><span class="legal-article-more">Читать статью ↗</span></a>
-    <a class="legal-article" href="/ustranenie-prepyatstv-v-polzovanii-zemelnym-uchastkom.html"><span>Земельные споры</span><strong>Сосед занял часть участка: как убрать контейнер, забор или постройку</strong><span class="legal-article-more">Читать статью ↗</span></a>
-  </div>
+<div class="representation-spotlight">
+ <div><p class="eyebrow">Главная услуга · Москва и Московская область</p><h2>Судебный юрист: защита строится на доказательствах</h2><p>Получили иск, не согласны с решением или готовите обращение в суд? Работа начинается с анализа дела, процессуальных рисков и документов. Дополнительная проверка с ИИ помогает находить пропуски и противоречия, но правовые выводы и ответственность остаются за юристом.</p><div class="spotlight-points"><span>Иск и возражения</span><span>Апелляция и кассация</span><span>Экспертизы и доказательства</span></div></div>
+ <div class="spotlight-aside"><p class="spotlight-kicker">Представительство в суде</p><strong>от 50 000 ₽</strong><small>за одну судебную инстанцию</small><a class="btn btn-gold" href="/predstavitelstvo-v-sude-moskva.html">Подробнее об услуге ↗</a><a class="spotlight-contact" href="https://max.ru/u/f9LHodD0cOJXOThelfL4zEZsDHL2apF2b_WxxjVt948nXhHX6XZt-opsspM" target="_blank" rel="noopener noreferrer">Обсудить дело в MAX ↗</a></div>
+</div>
+<div class="library-teaser-head"><div><p class="eyebrow dark-gold">Судебная практика и процессуальные документы</p><h2 id="legal-articles-title">Полезные разборы <em>для защиты в суде</em></h2><p>Юридические проблемы, судебные позиции и образцы документов. Полный каталог вынесен на отдельную страницу, чтобы главная оставалась удобной.</p></div><a class="library-all-link" href="/sudebnaya-praktika-i-obraztsy.html">Вся юридическая библиотека <span aria-hidden="true">↗</span></a></div>
+<div class="legal-articles-grid">
+<a class="legal-article" href="/samovolnaya-rekonstruktsiya-chastnogo-doma-cherez-sud.html"><span>Новая статья · 11 ноября 2026 года · Земельные и имущественные споры</span><strong>Самовольная реконструкция частного дома: как сохранить дом через суд</strong><span class="legal-article-more">Читать разбор ↗</span></a>
+<a class="legal-article" href="/servitut-dlya-prohoda-cherez-sosedniy-uchastok.html"><span>Новая статья · 5 ноября 2026 · Земельные споры</span><strong>Сервитут для прохода и проезда через соседний участок: как установить через суд</strong><span class="legal-article-more">Читать разбор ↗</span></a>
+<a class="legal-article" href="/vzyskanie-sudebnyh-rashodov-na-predstavitelya.html"><span>Судебные расходы</span><strong>Как взыскать расходы на юриста после суда</strong><span class="legal-article-more">Читать разбор ↗</span></a>
+</div><p class="library-teaser-foot"><a href="/sudebnaya-praktika-i-obraztsy.html">Смотреть все 26 материалов по жилищным, семейным, наследственным, земельным и арбитражным спорам ↗</a></p>
 </div>
 </div>
 </section><dialog aria-describedby="service-dialog-description" aria-labelledby="service-dialog-title" class="service-dialog" id="service-dialog">
@@ -740,5 +728,5 @@ body{overflow-x:hidden;overflow-x:clip}
   dialog.addEventListener('click',e=>{if(e.target===dialog)closeDetail();});
   dialog.addEventListener('close',()=>{if(lastTrigger)lastTrigger.focus();});
 })();
-</script><div style="background:#181714;color:#f4e5cc;text-align:center;padding:20px 15px;font:15px Arial,sans-serif"><a style="color:#eac28d;text-decoration:underline" href="/vykup-neznachitelnoy-doli-v-kvartire-cherez-sud.html">Новая статья: выкуп незначительной доли в квартире через суд</a></div></body>
+</script></body>
 </html>
