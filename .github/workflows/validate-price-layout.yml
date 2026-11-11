@@ -6,6 +6,9 @@ on:
       - index.html
       - predstavitelstvo-v-sude-moskva.html
       - .github/workflows/validate-price-layout.yml
+      - '*.html'
+      - sitemap.xml
+      - 'assets/**'
   workflow_dispatch:
 
 permissions:
