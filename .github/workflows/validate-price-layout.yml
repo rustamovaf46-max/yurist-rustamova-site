@@ -35,6 +35,11 @@ jobs:
                                if el.tag.endswith("loc") and el.text and
                                urlparse(el.text.strip()).path.endswith(".html") and
                                not urlparse(el.text.strip()).path.endswith("/privacy-policy.html")}
+          base = "https://xn--80aafwvmkbibjcl2m.xn--p1ai/"
+          catalog_url = base + "sudebnaya-praktika-i-obraztsy.html"
+          service_url = base + "predstavitelstvo-v-sude-moskva.html"
+          expected_library = expected_articles - {catalog_url, service_url}
+          assert expected_library, "No legal articles in sitemap"
           from playwright.sync_api import sync_playwright
           url = pathlib.Path("index.html").resolve().as_uri()
           with sync_playwright() as p:
@@ -80,12 +85,20 @@ jobs:
                           assert item["scrollWidth"] <= item["clientWidth"]+2, f"{width}: clipped video text: {item}"
                   articles=page.locator(".legal-article")
                   assert expected_articles, "no articles in sitemap"
-                  actual_articles = {urljoin("https://xn--80aafwvmkbibjcl2m.xn--p1ai/", href) for href in articles.evaluate_all("cards => cards.map(card => card.getAttribute('href'))")}
-                  assert articles.count()==len(expected_articles) and actual_articles==expected_articles, f"{width}: article cards differ from sitemap"
-                  assert page.locator('.mobile-nav a[href="#articles"]').count()==1, "missing Yandex Android articles navigation"
+                  actual_articles = {urljoin(base, href) for href in articles.evaluate_all("cards => cards.map(card => card.getAttribute('href'))")}
+                  assert articles.count() == 3 and actual_articles.issubset(expected_library), f"{width}: homepage highlights are not three valid library articles"
+                  assert page.locator('.mobile-nav a[href="/sudebnaya-praktika-i-obraztsy.html"]').count()==1, "missing Yandex Android library navigation"
                   for card in articles.all():
                       rect=card.bounding_box()
-                      assert rect and rect["x"]>=-1 and rect["x"]+rect["width"]<=width+1, f"{width}: article card clipped"
+                      assert rect and rect["x"]>=-1 and rect["x"]+rect["width"]<=width+1, f"{width}: highlighted article card clipped"
+                  catalog = browser.new_page(viewport={"width": width, "height": 880}, device_scale_factor=1)
+                  catalog.goto(pathlib.Path("sudebnaya-praktika-i-obraztsy.html").resolve().as_uri())
+                  library_cards = catalog.locator("#library-grid .legal-article")
+                  library_urls = {urljoin(base, href) for href in library_cards.evaluate_all("cards => cards.map(card => card.getAttribute('href'))")}
+                  assert library_cards.count()==len(expected_library) and library_urls==expected_library, f"{width}: library differs from sitemap"
+                  assert catalog.evaluate("document.documentElement.scrollWidth")<=width, f"{width}: library horizontal overflow"
+                  assert catalog.locator("h1").count()==1, f"{width}: library needs one H1"
+                  catalog.close()
                   assert float(data["leftBorder"].replace("px","")) >= 1, f"{width}: missing price card left border"
                   assert float(data["rightBorder"].replace("px","")) >= 1, f"{width}: missing price card right border"
                   for label in ["word","eyebrow","price"]:
@@ -128,10 +141,15 @@ jobs:
                       assert page.locator("h1").count() == 1, filename
                       assert page.evaluate("document.documentElement.scrollWidth") <= width, f"{filename}: overflow at {width}"
                       max_links = page.locator('a[href^="https://max.ru/"]')
-                      assert max_links.count() >= 3 and all(href == max_url for href in max_links.evaluate_all("links => links.map(a => a.href)")), filename
-                      assert page.locator(".hero a").filter(has_text="MAX").is_visible(), filename + ": top MAX"
-                      assert page.locator(".cta-panel a").filter(has_text="MAX").is_visible(), filename + ": CTA MAX"
-                      assert page.locator('a[href="tel:+79099282398"]').count() >= 3, filename + ": telephone"
+                      is_catalog = filename == "sudebnaya-praktika-i-obraztsy.html"
+                      assert max_links.count() >= (2 if is_catalog else 3) and all(href == max_url for href in max_links.evaluate_all("links => links.map(a => a.href)")), filename
+                      if not is_catalog:
+                          assert page.locator(".hero a").filter(has_text="MAX").is_visible(), filename + ": top MAX"
+                          assert page.locator(".cta-panel a").filter(has_text="MAX").is_visible(), filename + ": CTA MAX"
+                      else:
+                          assert page.locator(".library-toolbar input").count()==1, filename + ": library search"
+                          assert page.locator("#library-grid .legal-article").count()>=1, filename + ": library cards"
+                      assert page.locator('a[href="tel:+79099282398"]').count() >= (2 if is_catalog else 3), filename + ": telephone"
                       if width <= 768:
                           assert page.locator(".mobile-bottom").is_visible(), filename + ": mobile contacts"
                       assert not errors, f"{filename}: JavaScript errors {errors}"
