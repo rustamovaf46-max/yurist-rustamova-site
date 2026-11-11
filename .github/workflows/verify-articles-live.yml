@@ -215,7 +215,7 @@ jobs:
                   raise RuntimeError(f"Живая ссылка MAX отсутствует или ведёт не на профиль владельца: {url}")
               if not page.phone_links or any(href != PHONE for href in page.phone_links):
                   raise RuntimeError(f"Живая телефонная ссылка отсутствует или расходится: {url}")
-              print("PASS:", url, "HTTP 200, exact GitHub HTML, H1, indexable, live MAX/phone, homepage card, sitemap")
+              print("PASS:", url, "HTTP 200, exact GitHub HTML, H1, indexable, live MAX/phone, catalog card, sitemap")
           print(f"VERIFIED: {len(library_pages)} legal articles, sitemap identical to GitHub, {len(catalog.cards)} catalog cards and {len(home.cards)} homepage highlights on REG.RU")
           print("This checks technical accessibility, not actual Yandex/Google indexing.")
           PY
