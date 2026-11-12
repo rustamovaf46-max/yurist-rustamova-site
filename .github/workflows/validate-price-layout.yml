@@ -44,7 +44,7 @@ jobs:
           url = pathlib.Path("index.html").resolve().as_uri()
           with sync_playwright() as p:
               browser = p.chromium.launch(headless=True, args=["--no-sandbox"])
-              for width in [280, 320, 360, 375, 390, 430, 700, 768, 1024, 1440]:
+              for width in [280, 320, 360, 375, 390, 414, 430, 700, 768, 1024, 1440]:
                   page = browser.new_page(viewport={"width": width, "height": 880}, device_scale_factor=1)
                   page.goto(url)
                   initial_y = page.evaluate("window.scrollY")
