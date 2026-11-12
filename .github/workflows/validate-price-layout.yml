@@ -132,7 +132,7 @@ jobs:
           with sync_playwright() as p:
               browser = p.chromium.launch(headless=True, args=["--no-sandbox"])
               for filename in files:
-                  for width in [320, 390, 768, 1440]:
+                  for width in [320, 360, 375, 390, 414, 768, 1440]:
                       page = browser.new_page(viewport={"width": width, "height": 900})
                       errors = []
                       page.on("pageerror", lambda error: errors.append(str(error)))
