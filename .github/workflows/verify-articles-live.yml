@@ -170,12 +170,12 @@ jobs:
               raise RuntimeError("Живые телефонные ссылки на главной отсутствуют или расходятся.")
           if home.noindex:
               raise RuntimeError("Homepage has noindex")
-          if 'id="legal-articles-title"' not in homepage or 'href="/sudebnaya-praktika-i-obraztsy.html"' not in homepage:
-              raise RuntimeError("Homepage article section or mobile navigation missing")
+          if 'href="/sudebnaya-praktika-i-obraztsy.html"' not in homepage:
+              raise RuntimeError("Homepage library navigation missing")
           if "Precise left-aligned price heading" not in homepage:
               raise RuntimeError("Mobile price heading CSS missing")
-          # Полный индекс статей теперь находится на отдельной странице библиотеки;
-          # главная содержит избранные карточки и самостоятельную страницу услуги.
+          # Полный индекс статей находится только на отдельной странице библиотеки;
+          # на главной нет карточек статей, услуга представительства показана отдельно.
           catalog_url = BASE + "/sudebnaya-praktika-i-obraztsy.html"
           service_url = BASE + "/predstavitelstvo-v-sude-moskva.html"
           library_pages = expected_articles - {catalog_url, service_url}
@@ -192,16 +192,11 @@ jobs:
               raise RuntimeError(f"Library cards out of sync. Missing: {sorted(library_pages-card_set)}; extra: {sorted(card_set-library_pages)}; duplicates: {duplicates}")
           if catalog_url not in home.links or service_url not in home.links:
               raise RuntimeError("На главной нет ссылок на библиотеку и услугу представительства.")
-          featured_articles = {
-              BASE + "/samovolnaya-rekonstruktsiya-chastnogo-doma-cherez-sud.html",
-              BASE + "/servitut-dlya-prohoda-cherez-sosedniy-uchastok.html",
-              BASE + "/vzyskanie-sudebnyh-rashodov-na-predstavitelya.html",
-          }
-          if len(home.cards) != 3 or set(home.cards) != featured_articles:
-              raise RuntimeError(f"На главной должны быть ровно три избранные карточки: {home.cards}")
-          if 'id="legal-articles-title"' not in homepage or 'class="representation-focus"' not in homepage:
+          if home.cards:
+              raise RuntimeError(f"На главной не должно быть карточек статей: {home.cards}")
+          if 'class="representation-focus"' not in homepage:
               raise RuntimeError("На главной отсутствует выделенный блок судебного представительства.")
-          print(f"LIBRARY PASS: {len(library_pages)} articles in catalog, 3 featured homepage cards, featured court representation.")
+          print(f"LIBRARY PASS: {len(library_pages)} articles in catalog, 0 homepage article cards, featured court representation.")
 
           for url in sorted(expected_articles):
               page_html, page_headers = fetch(url + "?run=" + run_id)
