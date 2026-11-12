@@ -86,10 +86,18 @@ jobs:
                   articles=page.locator(".legal-article")
                   assert expected_articles, "no articles in sitemap"
                   actual_articles = {urljoin(base, href) for href in articles.evaluate_all("cards => cards.map(card => card.getAttribute('href'))")}
-                  assert articles.count() == 0 and not actual_articles, f"{width}: homepage must not contain article cards: {actual_articles}"
+                  featured_articles = {
+                      base + "samovolnaya-rekonstruktsiya-chastnogo-doma-cherez-sud.html",
+                      base + "servitut-dlya-prohoda-cherez-sosedniy-uchastok.html",
+                      base + "vzyskanie-sudebnyh-rashodov-na-predstavitelya.html",
+                  }
+                  assert articles.count() == 3 and actual_articles == featured_articles, f"{width}: homepage featured articles differ: {actual_articles}"
                   assert page.locator('a[href="/sudebnaya-praktika-i-obraztsy.html"]').count() >= 1, f"{width}: library navigation is missing"
                   assert page.locator('.representation-focus a[href="/predstavitelstvo-v-sude-moskva.html"]').count() >= 1, f"{width}: highlighted court representation is missing"
                   assert page.locator('.mobile-nav a[href="/sudebnaya-praktika-i-obraztsy.html"]').count()==1, "missing Yandex Android library navigation"
+                  for card in articles.all():
+                      rect=card.bounding_box()
+                      assert rect and rect["x"]>=-1 and rect["x"]+rect["width"]<=width+1, f"{width}: highlighted article card clipped"
                   catalog = browser.new_page(viewport={"width": width, "height": 880}, device_scale_factor=1)
                   catalog.goto(pathlib.Path("sudebnaya-praktika-i-obraztsy.html").resolve().as_uri())
                   library_cards = catalog.locator("#library-grid .legal-article")
