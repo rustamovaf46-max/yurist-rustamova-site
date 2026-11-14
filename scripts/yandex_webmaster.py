@@ -83,6 +83,18 @@ def audit(uid, hosts):
                 info["failure_reason"] = (result.get("fail_info") or {}).get("reason")
             except ApiError as exc:
                 info["verification_error"] = str(exc)
+        if (host_id and host.get("verified") and
+                urlparse(host.get("ascii_host_url", "")).scheme == "https"):
+            try:
+                queue = request("GET", endpoint(uid, host_id, "recrawl/queue?limit=20"))
+                tasks = queue.get("tasks", [])
+                info["recent_recrawl_tasks"] = [
+                    {"url": task.get("url"), "state": task.get("state"),
+                     "added_time": task.get("added_time"), "task_id": task.get("task_id")}
+                    for task in tasks if urlparse(task.get("url", "")).hostname == HOST
+                ][:10]
+            except ApiError as exc:
+                info["recrawl_queue_error"] = str(exc)
         print(json.dumps(info, ensure_ascii=False))
     return 0 if any(h.get("verified") and urlparse(h.get("ascii_host_url", "")).scheme == "https" for h in matches) else 2
 
