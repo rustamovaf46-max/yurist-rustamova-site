@@ -1,0 +1,26 @@
+name: ZEUS Technical SEO Audit
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 4 * * *'
+  push:
+    branches: [main]
+    paths:
+      - '*.html'
+      - 'sitemap.xml'
+      - 'robots.txt'
+      - 'scripts/seo_audit.py'
+      - '.github/workflows/zeus-seo-audit.yml'
+permissions:
+  contents: read
+concurrency:
+  group: zeus-seo-audit
+  cancel-in-progress: false
+jobs:
+  seo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Audit all published pages and sitemap
+        run: python3 scripts/seo_audit.py
