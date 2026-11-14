@@ -1,0 +1,25 @@
+name: ZEUS Yandex Metrica Read Audit
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '11 6 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/yandex_metrika_audit.py'
+      - '.github/workflows/zeus-metrika-audit.yml'
+permissions:
+  contents: read
+concurrency:
+  group: zeus-metrika-audit
+  cancel-in-progress: false
+jobs:
+  metrika:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      YANDEX_WEBMASTER_TOKEN: ${{ secrets.YANDEX_WEBMASTER_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Metrica counter, goals, visits and OAuth authorization
+        run: python3 scripts/yandex_metrika_audit.py
