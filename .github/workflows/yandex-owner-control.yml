@@ -1,0 +1,61 @@
+name: ZEUS Yandex Webmaster owner API
+on:
+  schedule:
+    - cron: '29 * * * *'
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: 'Audit or explicitly authorized operation'
+        required: true
+        type: choice
+        options: [audit, verify, recrawl]
+        default: audit
+      url:
+        description: 'One full canonical HTTPS URL for recrawl'
+        required: false
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: zeus-yandex-owner-api
+  cancel-in-progress: false
+jobs:
+  yandex:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      YANDEX_WEBMASTER_TOKEN: ${{ secrets.YANDEX_WEBMASTER_TOKEN }}
+      ACTION: ${{ inputs.operation || 'audit' }}
+      TARGET_URL: ${{ inputs.url || '' }}
+      EVENT_NAME: ${{ github.event_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check whether owner OAuth secret was installed
+        id: token
+        shell: bash
+        run: |
+          if [[ -z "$YANDEX_WEBMASTER_TOKEN" ]]; then
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+            echo 'Yandex authorization pending: set YANDEX_WEBMASTER_TOKEN in repository Actions Secrets.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Diagnose or run a limited authenticated operation
+        if: steps.token.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$ACTION" in
+            audit)
+              python3 scripts/yandex_webmaster.py audit
+              ;;
+            verify)
+              [[ "$EVENT_NAME" == 'workflow_dispatch' ]] || exit 1
+              python3 scripts/yandex_webmaster.py verify --execute
+              ;;
+            recrawl)
+              [[ "$EVENT_NAME" == 'workflow_dispatch' && -n "$TARGET_URL" ]] || exit 1
+              python3 scripts/yandex_webmaster.py recrawl --url "$TARGET_URL" --execute
+              ;;
+            *) echo 'Unsupported action'; exit 1 ;;
+          esac
