@@ -1,5 +1,6 @@
 {
-  "operation": "audit",
-  "urls": [],
-  "audit_reason": "Owner requested post-secret setup connectivity check"
+  "operation": "recrawl",
+  "urls": [
+    "https://xn--80aafwvmkbibjcl2m.xn--p1ai/"
+  ]
 }
