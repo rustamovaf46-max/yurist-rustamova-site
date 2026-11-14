@@ -1,4 +1,5 @@
 {
   "operation": "audit",
-  "urls": []
+  "urls": [],
+  "audit_reason": "Owner requested post-secret setup connectivity check"
 }
