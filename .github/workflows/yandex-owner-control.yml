@@ -2,6 +2,9 @@ name: ZEUS Yandex Webmaster owner API
 on:
   schedule:
     - cron: '29 * * * *'
+  push:
+    branches: [main]
+    paths: ['.github/zeus-yandex-command.json']
   workflow_dispatch:
     inputs:
       operation:
@@ -45,6 +48,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ "$EVENT_NAME" == 'push' ]]; then
+            python3 scripts/yandex_command.py
+            exit 0
+          fi
           case "$ACTION" in
             audit)
               python3 scripts/yandex_webmaster.py audit
