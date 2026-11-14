@@ -33,6 +33,9 @@ jobs:
       EVENT_NAME: ${{ github.event_name }}
     steps:
       - uses: actions/checkout@v4
+      - name: Test that unsafe API operations are blocked
+        shell: bash
+        run: PYTHONPATH=scripts python3 -m unittest discover -s tests -p 'test_yandex_webmaster.py' -v
       - name: Check whether owner OAuth secret was installed
         id: token
         shell: bash
