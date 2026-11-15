@@ -1,0 +1,43 @@
+name: AIV — синтез профессиональных русских голосов
+on:
+  push:
+    branches: [zeus-aiv-video-source]
+    paths: [.github/workflows/aiv-russian-voices.yml]
+permissions:
+  contents: read
+jobs:
+  voice:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Install Russian TTS
+        run: python3 -m pip install --upgrade edge-tts
+      - name: Generate short actor-style lines
+        shell: bash
+        run: |
+          mkdir -p voices
+          python3 - <<'PY'
+          import asyncio,edge_tts,subprocess,json
+          lines=[
+           ('01','Брось ты это дело.','ru-RU-DmitryNeural','-8%','-9Hz'),
+           ('02','Не ввязывайся.','ru-RU-SvetlanaNeural','-9%','-12Hz'),
+           ('03','У тебя ничего не получится.','ru-RU-DmitryNeural','-11%','-4Hz'),
+           ('04','Все юристы — мошенники! Вы наживаетесь на нашем горе!','ru-RU-SvetlanaNeural','-7%','+3Hz'),
+           ('05','Но кто тогда защитит людей?','ru-RU-SvetlanaNeural','-14%','-4Hz')
+          ]
+          async def main():
+           for fn,text,voice,rate,pitch in lines:
+            try:
+             await edge_tts.Communicate(text,voice,rate=rate,pitch=pitch).save(f'voices/{fn}.mp3')
+             print(fn,'ok')
+            except Exception as exc:print(fn,'FAILED',str(exc)[:200])
+          asyncio.run(main())
+          open('voices/script.txt','w').write('\n'.join(f'{x[0]}|{x[1]}' for x in lines))
+          PY
+          ls -lh voices/
+      - name: Export voice recordings
+        uses: actions/upload-artifact@v4
+        with:
+          name: AIV_Russian_dialogue
+          path: voices/
+          retention-days: 7
