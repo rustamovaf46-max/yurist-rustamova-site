@@ -1,0 +1,39 @@
+name: AIV — извлечение исходника Rutube (разовый монтаж)
+on:
+  push:
+    branches: [zeus-aiv-video-source]
+    paths: [.github/workflows/aiv-rutube-source.yml]
+permissions:
+  contents: read
+jobs:
+  download-video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Установить yt-dlp
+        run: |
+          python3 -m pip install --user --upgrade yt-dlp
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Скачать оригинальный ролик АИВ в исходном качестве
+        shell: bash
+        run: |
+          mkdir -p aiv_source
+          set +e
+          yt-dlp --version
+          yt-dlp --no-playlist --retries 5 --fragment-retries 7 --socket-timeout 25 --merge-output-format mp4 --format 'bv*[height<=1080]+ba/b[height<=1080]/b' --output 'aiv_source/AIV_strategicheskaya_sessiya.%(ext)s' 'https://rutube.ru/video/00f557a15db42b651f0f07abdfc4cf31/' 2>&1 | tee aiv_source/download_log.txt
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            echo "Основной способ не сработал, пробуем адрес встраиваемого видео" | tee -a aiv_source/download_log.txt
+            yt-dlp --no-playlist --retries 4 --fragment-retries 6 --socket-timeout 25 --merge-output-format mp4 --output 'aiv_source/AIV_strategicheskaya_sessiya.%(ext)s' 'https://rutube.ru/play/embed/00f557a15db42b651f0f07abdfc4cf31' 2>&1 | tee -a aiv_source/download_log.txt
+          fi
+          find aiv_source -maxdepth 1 -type f -printf '%f %s bytes\n'
+          ffprobe -v error -show_entries format=duration,size -of json aiv_source/AIV_strategicheskaya_sessiya.*p4 2>/dev/null | tee aiv_source/probe.json || true
+          exit 0
+      - name: Сохранить видео и диагностику в артефакте
+        uses: actions/upload-artifact@v4
+        with:
+          name: AIV_strategicheskaya_sessiya_RUTUBE
+          path: aiv_source/
+          retention-days: 7
+          compression-level: 0
+          if-no-files-found: error
