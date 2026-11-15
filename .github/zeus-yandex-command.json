@@ -1,7 +1,4 @@
 {
-  "operation": "recrawl",
-  "urls": [
-    "https://xn--80aafwvmkbibjcl2m.xn--p1ai/assotsiatsiya-yuristov-rossii-besplatnaya-yuridicheskaya-pomoshch.html",
-    "https://xn--80aafwvmkbibjcl2m.xn--p1ai/sudebnaya-praktika-i-obraztsy.html"
-  ]
+  "operation": "audit",
+  "urls": []
 }
