@@ -1,0 +1,64 @@
+name: AIV — загрузить игровые кадры из открытых видеоархивов
+on:
+  push:
+    branches: [zeus-aiv-video-source]
+    paths: [.github/workflows/aiv-stock-footage.yml]
+permissions:
+  contents: read
+jobs:
+  gather:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Установить downloader
+        run: |
+          python3 -m pip install --user --upgrade yt-dlp requests
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Скачать открытые видео, сохранить журнал
+        shell: bash
+        run: |
+          mkdir -p clips
+          python3 - <<'PY'
+          import subprocess, pathlib, requests, re, html, json, os
+          ids=[6101325,6100900,6100408,6099810,8731382,8731469,8275796,3249674,6100013,6101336]
+          log={}
+          for vid in ids:
+            site=f'https://www.pexels.com/video/{vid}/'
+            note={'url':site}
+            base=pathlib.Path('clips')/str(vid)
+            ytdlp=['yt-dlp','--no-playlist','--socket-timeout','20','--retries','2','--format','best[height<=720]/best','--merge-output-format','mp4','--max-filesize','45M','-o',str(base)+'.%(ext)s',site]
+            try:
+              p=subprocess.run(ytdlp,text=True,capture_output=True,timeout=70)
+              note['yt-dlp']={'exit':p.returncode,'stderr':p.stderr[-350:],'stdout':p.stdout[-250:]}
+            except Exception as e:note['yt-dlp_error']=str(e)
+            found=list(pathlib.Path('clips').glob(str(vid)+'.*'))
+            if not any(f.suffix=='.mp4' for f in found):
+              try:
+                r=requests.get(site,timeout=12,headers={'User-Agent':'Mozilla/5.0'})
+                note['page']={'status':r.status_code,'length':len(r.content)}
+                links=re.findall(r'https?:[^"\\s<>]+?\\.mp4(?:\\?[^"\\s<>]*)?',html.unescape(r.text))
+                links=[l.replace('\\\\u0026','&').replace('\\/','/') for l in links]
+                links=list(dict.fromkeys(links))
+                note['candidates']=len(links)
+                links.sort(key=lambda u:(0 if ('720' in u or '640' in u or '960' in u) else 1, len(u)))
+                for link in links[:12]:
+                  try:
+                    resp=requests.get(link,timeout=20,headers={'User-Agent':'Mozilla/5.0','Referer':'https://www.pexels.com/'})
+                    if resp.status_code==200 and len(resp.content)>100000 and len(resp.content)<47_000_000:
+                      base.with_suffix('.mp4').write_bytes(resp.content); note['direct']=link[:160];break
+                  except Exception:pass
+              except Exception as e:note['error']=str(e)
+            files=list(pathlib.Path('clips').glob(str(vid)+'.*'))
+            note['files']=[(x.name,x.stat().st_size) for x in files]
+            log[str(vid)]=note
+          pathlib.Path('clips/status.json').write_text(json.dumps(log,ensure_ascii=False,indent=2))
+          print(json.dumps({k:v.get('files') for k,v in log.items()},indent=2))
+          PY
+          for p in clips/*.mp4; do [ -e "$p" ] || break; ffprobe -v error -show_entries format=duration,size -of json "$p" || true; done
+      - name: Передать полученные исходники
+        uses: actions/upload-artifact@v4
+        with:
+          name: AIV_real_stock_footage
+          path: clips/
+          retention-days: 4
+          compression-level: 0
