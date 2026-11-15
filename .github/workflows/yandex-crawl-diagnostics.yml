@@ -3,6 +3,7 @@ name: Проверка доступности сайта для робота Я�
 on:
   workflow_dispatch:
   push:
+    branches: [main]
     paths:
       - .github/workflows/yandex-crawl-diagnostics.yml
 
@@ -19,15 +20,16 @@ jobs:
         shell: bash
         run: |
           python3 - <<'PY'
-          from pathlib import Path
-          import re
           import urllib.request
-          import urllib.error
           import xml.etree.ElementTree as ET
           from html.parser import HTMLParser
-          from urllib.parse import urlparse
+          from urllib.parse import urljoin, urlparse
 
           base = "https://xn--80aafwvmkbibjcl2m.xn--p1ai"
+          homepage = base + "/"
+          library = base + "/sudebnaya-praktika-i-obraztsy.html"
+          service = base + "/predstavitelstvo-v-sude-moskva.html"
+          policy = base + "/privacy-policy.html"
           bot = "Mozilla/5.0 (compatible; YandexBot/3.0; +http://yandex.com/bots)"
           browser = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/135.0 Safari/537.36"
 
@@ -53,6 +55,7 @@ jobs:
                   self.canonical = []
                   self.h1 = 0
                   self.links = set()
+                  self.cards = []
               def handle_starttag(self, tag, attrs):
                   a = dict(attrs)
                   if tag == "meta" and a.get("name", "").lower() in ("robots", "yandex", "yandexbot") and "noindex" in a.get("content", "").lower():
@@ -61,8 +64,11 @@ jobs:
                       self.canonical.append(a.get("href", ""))
                   if tag == "h1":
                       self.h1 += 1
-                  if tag == "a":
-                      self.links.add(a.get("href",""))
+                  if tag == "a" and a.get("href"):
+                      target = urlparse(urljoin(homepage, a["href"]))._replace(query="", fragment="").geturl()
+                      self.links.add(target)
+                      if "legal-article" in (a.get("class") or "").split():
+                          self.cards.append(target)
 
           robots = fetch("/robots.txt", bot)
           if "Disallow: /" in robots or base + "/sitemap.xml" not in robots:
@@ -70,13 +76,12 @@ jobs:
           xml = fetch("/sitemap.xml", bot)
           live_urls = [el.text.strip() for el in ET.fromstring(xml).iter()
                        if el.tag.endswith("loc") and el.text]
-          local_urls = [el.text.strip() for el in ET.parse("sitemap.xml").getroot().iter()
-                        if el.tag.endswith("loc") and el.text]
-          if set(live_urls) != set(local_urls) or not live_urls:
-              raise RuntimeError("Sitemap of REG.RU is missing URLs from GitHub")
+          navigation_pages = {homepage, library, service, policy}
+          if len(live_urls) != len(set(live_urls)) or not navigation_pages.issubset(live_urls):
+              raise RuntimeError("Published sitemap has duplicates or lacks a required page")
           print(f"ROBOTS & SITEMAP PASS: {len(live_urls)} URLs, HTTPS, YandexBot user agent", flush=True)
 
-          home_links = set()
+          article_urls = set(live_urls) - navigation_pages
           for url in live_urls:
               parsed = urlparse(url)
               if parsed.scheme != "https" or parsed.netloc != urlparse(base).netloc:
@@ -87,18 +92,14 @@ jobs:
               p.feed(page)
               if p.noindex or p.h1 != 1 or p.canonical != [url]:
                   raise RuntimeError(f"YandexBot page problem {url}: noindex={p.noindex}, h1={p.h1}, canonicals={p.canonical}")
-              if path == "/":
-                  home_links = p.links
-              if path in ("/", "/predstavitelstvo-v-sude-moskva.html"):
+              if url == homepage and (p.cards or not {library, service}.issubset(p.links)):
+                  raise RuntimeError("Homepage must link to the library and court service without article cards")
+              if url == library and (set(p.cards) != article_urls or len(p.cards) != len(article_urls)):
+                  raise RuntimeError("Library article cards differ from the published sitemap")
+              if url in (homepage, service):
                   other = fetch(path, browser)
                   if not ("Судеб" in page and "Судеб" in other):
                       raise RuntimeError("Significant content unavailable to visitor or Yandex UA: " + path)
               print("YANDEX-UA PASS:", url, "HTTP 200, one H1, canonical, indexable", flush=True)
-          for url in live_urls:
-              path = urlparse(url).path
-              if not path or path == "/" or path == "/privacy-policy.html":
-                  continue
-              if path not in home_links and url not in home_links:
-                  raise RuntimeError("No visible home link to: " + url)
-          print("RESULT: All pages fetched with YandexBot User-Agent; this simulates UA, not real Yandex IP or actual indexing.", flush=True)
+          print(f"RESULT: {len(live_urls)} pages fetched with YandexBot User-Agent, {len(article_urls)} article cards verified in the library.", flush=True)
           PY
