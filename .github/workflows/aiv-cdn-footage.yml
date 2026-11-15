@@ -1,0 +1,57 @@
+name: AIV — прямая загрузка футажей без страницы
+on:
+  push:
+    branches: [zeus-aiv-video-source]
+    paths: [.github/workflows/aiv-cdn-footage.yml]
+permissions:
+  contents: read
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: CDN fetch and validate
+        run: |
+          mkdir -p clips
+          python3 - <<'PY'
+          import requests,pathlib,json,subprocess
+          videos={6101325:('4096_2160',30),6100900:('2160_4096',30),6100408:('4096_2160',30),6099810:('4096_2160',30),8275796:('1920_1080',30),8731382:('1920_1080',25),8731469:('1920_1080',25),3249674:('3840_2160',25)}
+          log={}
+          for id,(dim,fps) in videos.items():
+            ds=['1280_720','1920_1080','960_540','640_360'] if dim.split('_')[0] != '2160' else ['720_1366','1080_2048','640_1214','360_682','1080_1920','720_1280']
+            candidates=[]
+            for d in ds:
+              for tier in ['hd','sd']:
+                candidates.append(f'https://videos.pexels.com/video-files/{id}/{id}-{tier}_{d}_{fps}fps.mp4')
+            candidates.append(f'https://videos.pexels.com/video-files/{id}/{id}-uhd_{dim}_{fps}fps.mp4')
+            rec={'tried':[]}
+            for url in candidates:
+              try:
+                r=requests.get(url,headers={'Range':'bytes=0-1023','User-Agent':'Mozilla/5.0'},timeout=8,stream=True)
+                status=r.status_code;size=int(r.headers.get('Content-Length',0))
+                rec['tried'].append((url.rsplit('/',1)[-1],status,size))
+                if status not in (200,206):r.close();continue
+                r.close()
+                with requests.get(url,stream=True,timeout=55) as src:
+                  src.raise_for_status(); f=pathlib.Path('clips')/(str(id)+'.mp4');total=0
+                  with open(f,'wb') as o:
+                    for chunk in src.iter_content(524288):
+                      if chunk:o.write(chunk);total+=len(chunk)
+                      if total>49000000:break
+                if total>49000000: f.unlink();rec['skipped_large']=url;continue
+                dur=subprocess.run(['ffprobe','-v','error','-show_entries','format=duration','-of','default=noprint_wrappers=1:nokey=1',str(f)],capture_output=True,text=True).stdout.strip()
+                if dur:
+                  rec['saved']={'url':url,'bytes':total,'duration':dur};break
+                f.unlink(missing_ok=True)
+              except Exception as e:rec['tried'].append((url.rsplit('/',1)[-1],type(e).__name__))
+            log[id]=rec
+          pathlib.Path('clips/log.json').write_text(json.dumps(log,ensure_ascii=False,indent=2))
+          for k,v in log.items():print(k,v.get('saved'),v['tried'][:4],flush=True)
+          PY
+      - name: Save files
+        uses: actions/upload-artifact@v4
+        with:
+          name: AIV_live_stock_CDN
+          path: clips/
+          retention-days: 4
+          compression-level: 0
