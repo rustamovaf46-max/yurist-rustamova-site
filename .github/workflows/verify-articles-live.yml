@@ -10,6 +10,7 @@ on:
   schedule:
     - cron: '13,47 * * * *' # Проверка сразу после почасовой синхронизации и резервная проверка
   push:
+    branches: [main]
     paths:
       - .github/workflows/verify-articles-live.yml
       - yandex_f716343b29761cf2.html
@@ -29,6 +30,8 @@ jobs:
     steps:
       - name: Получить эталонный sitemap из main
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Проверить MAX на всех публичных страницах из sitemap
         shell: bash
@@ -73,6 +76,7 @@ jobs:
           PY
 
       - name: Сверить ВСЕ статьи, sitemap и карточки действующего сайта
+        id: live
         shell: bash
         run: |
           set -euo pipefail
@@ -83,12 +87,15 @@ jobs:
           from urllib.request import Request, urlopen
           from xml.etree import ElementTree as ET
           import os
+          import subprocess
+          import time
 
           BASE = "https://xn--80aafwvmkbibjcl2m.xn--p1ai"
           MAX = "https://max.ru/u/f9LHodD0cOJXOThelfL4zEZsDHL2apF2b_WxxjVt948nXhHX6XZt-opsspM"
           PHONE = "tel:+79099282398"
           UA = "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36 YaBrowser/24.12"
           run_id = os.environ.get("GITHUB_RUN_ID", "check")
+          sync_window_seconds = 2 * 60 * 60
 
           def fetch(url):
               request = Request(url, headers={"User-Agent": UA, "Cache-Control": "no-cache"})
@@ -101,6 +108,22 @@ jobs:
                       if "noindex" in response.headers.get("X-Robots-Tag", "").lower():
                           raise RuntimeError(f"X-Robots-Tag noindex: {url}")
                   return response.read().decode("utf-8"), response.headers
+
+          def verify_version(filename, actual):
+              if actual == Path(filename).read_bytes():
+                  return
+              changes = subprocess.check_output(
+                  ["git", "log", "-2", "--format=%H %ct", "--", filename], text=True
+              ).splitlines()
+              if len(changes) == 2 and 0 <= time.time() - int(changes[0].split()[1]) < sync_window_seconds:
+                  previous_commit = changes[1].split()[0]
+                  previous = subprocess.check_output(["git", "show", f"{previous_commit}:{filename}"])
+                  if actual == previous:
+                      with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+                          print("publication_pending=true", file=output)
+                      print(f"::notice::REG.RU ещё отдаёт предыдущую версию {filename}. Сверку повторит плановый запуск.")
+                      raise SystemExit(0)
+              raise RuntimeError(f"Файл {filename} на REG.RU отличается от GitHub main.")
 
           def sitemap_urls(xml_data):
               root = ET.fromstring(xml_data)
@@ -147,9 +170,8 @@ jobs:
 
           expected = sitemap_urls(Path("sitemap.xml").read_text(encoding="utf-8"))
           actual, _ = fetch(BASE + "/sitemap.xml?run=" + run_id)
-          if actual.encode("utf-8") != Path("sitemap.xml").read_bytes():
-              raise RuntimeError("Живой sitemap.xml побайтово отличается от файла в GitHub main.")
           live = sitemap_urls(actual)
+          verify_version("sitemap.xml", actual.encode("utf-8"))
           if expected != live:
               raise RuntimeError(f"REG.RU sitemap differs from GitHub. Missing: {sorted(expected-live)}; extra: {sorted(live-expected)}")
 
@@ -158,8 +180,7 @@ jobs:
           if not expected_articles:
               raise RuntimeError("No SEO articles in sitemap")
           homepage, headers = fetch(BASE + "/?run=" + run_id)
-          if homepage.encode("utf-8") != Path("index.html").read_bytes():
-              raise RuntimeError("Живой index.html побайтово отличается от GitHub main.")
+          verify_version("index.html", homepage.encode("utf-8"))
           home = Page()
           home.feed(homepage)
           if 'name="viewport"' not in homepage.lower():
@@ -180,8 +201,7 @@ jobs:
           service_url = BASE + "/predstavitelstvo-v-sude-moskva.html"
           library_pages = expected_articles - {catalog_url, service_url}
           catalog_html, _ = fetch(catalog_url + "?run=" + run_id)
-          if catalog_html.encode("utf-8") != Path("sudebnaya-praktika-i-obraztsy.html").read_bytes():
-              raise RuntimeError("Живая библиотека расходится с GitHub main.")
+          verify_version("sudebnaya-praktika-i-obraztsy.html", catalog_html.encode("utf-8"))
           catalog = Page()
           catalog.feed(catalog_html)
           if catalog.noindex or not catalog.has_h1:
@@ -210,8 +230,7 @@ jobs:
               if "text/html" not in page_headers.get("Content-Type", "").lower():
                   raise RuntimeError(f"Not HTML: {url}")
               filename = Path(urlparse(url).path).name
-              if page_html.encode("utf-8") != Path(filename).read_bytes():
-                  raise RuntimeError(f"Опубликованный HTML отличается от GitHub main: {filename}")
+              verify_version(filename, page_html.encode("utf-8"))
               page = Page()
               page.feed(page_html)
               if not page.has_h1 or page.noindex:
@@ -257,6 +276,8 @@ jobs:
 
       - name: Ежедневный контроль новой статьи после 12:00 МСК
         if: always()
+        env:
+          AWAITING_DEPLOYMENT: ${{ steps.live.outputs.publication_pending }}
         shell: bash
         run: |
           set -euo pipefail
@@ -286,8 +307,7 @@ jobs:
                   urls.append(item.text.strip())
           if len(urls) != len(set(urls)):
               raise SystemExit("::error::В sitemap.xml обнаружены повторяющиеся URL.")
-          if len(urls) != 28:
-              print("Sitemap URL count:", len(urls), "(проверено на дубли)")
+          print("Sitemap URL count:", len(urls), "(проверено на дубли)")
 
           candidates = []
           canonical_seen = set()
@@ -328,8 +348,11 @@ jobs:
 
           if not candidates:
               raise SystemExit("::error::В sitemap нет SEO-статьи с datePublished за сегодня. Дата МСК: " + expected_day)
-          if len({item[0] for item in candidates}) != len(candidates):
-              raise SystemExit("::error::Повторяющийся URL сегодняшней статьи.")
+          if len(candidates) != 1:
+              raise SystemExit("::error::За день должна выйти ровно одна новая статья. Найдено: " + str(len(candidates)))
+          if os.environ.get("AWAITING_DEPLOYMENT") == "true":
+              print("::notice::Статья за сегодня есть в main. Публикацию на REG.RU проверит плановый запуск.")
+              raise SystemExit(0)
 
           request = Request(
               base + "/sitemap.xml?daily=" + os.environ.get("GITHUB_RUN_ID", "check"),
@@ -364,6 +387,7 @@ jobs:
           PY
 
       - name: Проверить файл подтверждения Яндекс.Вебмастера на REG.RU
+        if: always()
         shell: bash
         run: |
           set -euo pipefail
