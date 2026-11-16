@@ -47,6 +47,20 @@ jobs:
               for width in [280, 320, 360, 375, 390, 414, 430, 700, 768, 1024, 1440]:
                   page = browser.new_page(viewport={"width": width, "height": 880}, device_scale_factor=1)
                   page.goto(url)
+                  # Protect the two owner-approved originals from regression to older assets.
+                  for selector, source in (
+                      (".hero-photo", "assets/fatima-hero-sharp.webp"),
+                      (".about-photo-wrap img", "assets/fatima-portrait-natural.webp"),
+                  ):
+                      pic = page.locator(selector)
+                      assert pic.count() == 1, f"{width}: missing approved photo: {selector}"
+                      assert pic.get_attribute("src") == source, f"{width}: wrong photo: {selector}"
+                      assert pic.evaluate("(img) => img.decode().then(() => img.naturalWidth > 0).catch(() => false)"), f"{width}: approved photo failed decoding"
+                  for section_id in ("iski-i-vozrazheniya", "predstavitelstvo-v-sude",
+                                     "apellyaciya-i-kassaciya", "hodataystva-i-ekspertizy"):
+                      link = "/predstavitelstvo-v-sude-moskva.html#" + section_id
+                      assert page.locator(f'.spotlight-points a[href="{link}"]').count() == 1, f"{width}: service button not linked: {link}"
+                      assert f'id="{section_id}"' in pathlib.Path("predstavitelstvo-v-sude-moskva.html").read_text(), f"missing destination anchor: {section_id}"
                   initial_y = page.evaluate("window.scrollY")
                   assert initial_y <= 1, f"{width}: page did not open at top: {initial_y}"
                   section = page.locator(".section-price")
