@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlparse
 from urllib.request import Request, urlopen
@@ -28,19 +29,31 @@ def request(method, path, data=None):
         "Content-Type": "application/json",
         "User-Agent": "Zeus-Site-Monitor/1.0",
     })
-    try:
-        with urlopen(req, timeout=TIMEOUT) as resp:
-            content = resp.read().decode("utf-8")
-            return json.loads(content) if content else {}
-    except HTTPError as exc:
+    # Яндекс периодически отвечает 429/5xx даже при подтверждённом доступе.
+    # Повторяем только временные ошибки, никогда — 400/401/403.
+    for attempt in range(3):
         try:
-            body = json.loads(exc.read().decode("utf-8"))
-            reason = body.get("error_code") or body.get("error_message") or str(exc.code)
-        except (ValueError, UnicodeDecodeError):
-            reason = str(exc.code)
-        raise ApiError(f"Yandex Webmaster HTTP {exc.code}: {reason}") from None
-    except URLError as exc:
-        raise ApiError(f"Yandex Webmaster network error: {exc.reason}") from None
+            with urlopen(req, timeout=TIMEOUT) as resp:
+                content = resp.read().decode("utf-8")
+                return json.loads(content) if content else {}
+        except HTTPError as exc:
+            if exc.code in (429, 500, 502, 503, 504) and attempt < 2:
+                print(f"Yandex Webmaster HTTP {exc.code}: retry {attempt + 1}/2", file=sys.stderr)
+                time.sleep(2 ** attempt)
+                continue
+            try:
+                error_body = json.loads(exc.read().decode("utf-8"))
+                reason = error_body.get("error_code") or error_body.get("error_message") or str(exc.code)
+            except (ValueError, UnicodeDecodeError):
+                reason = str(exc.code)
+            raise ApiError(f"Yandex Webmaster HTTP {exc.code}: {reason}") from None
+        except (URLError, TimeoutError) as exc:
+            if attempt < 2:
+                print(f"Yandex Webmaster temporary network failure: retry {attempt + 1}/2", file=sys.stderr)
+                time.sleep(2 ** attempt)
+                continue
+            raise ApiError(f"Yandex Webmaster network error: {exc}") from None
+    raise ApiError("Yandex Webmaster retries exhausted")
 
 def get_context():
     identity = request("GET", "/user")
