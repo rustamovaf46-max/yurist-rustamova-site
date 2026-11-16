@@ -1,4 +1,7 @@
 {
-  "operation": "audit",
-  "urls": []
+  "operation": "recrawl",
+  "urls": [
+    "https://xn--80aafwvmkbibjcl2m.xn--p1ai/advokatura-sudebnoe-predstavitelstvo-proekt-professionalizatsii-2026.html",
+    "https://xn--80aafwvmkbibjcl2m.xn--p1ai/sudebnaya-praktika-i-obraztsy.html"
+  ]
 }
