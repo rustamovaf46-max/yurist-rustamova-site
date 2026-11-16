@@ -1,4 +1,5 @@
 {
   "operation": "audit",
-  "urls": []
+  "urls": [],
+  "note": "Post-fix audit: confirm Yandex OAuth and transient 504 retry regression tests"
 }
