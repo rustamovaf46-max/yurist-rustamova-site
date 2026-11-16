@@ -1,4 +1,6 @@
 {
-  "operation": "audit",
-  "urls": []
+  "operation": "recrawl",
+  "urls": [
+    "https://xn--80aafwvmkbibjcl2m.xn--p1ai/isklyuchenie-uchastnika-iz-ooo-cherez-sud.html"
+  ]
 }
