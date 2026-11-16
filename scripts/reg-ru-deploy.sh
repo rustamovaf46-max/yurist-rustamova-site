@@ -105,4 +105,64 @@ for f in "$SRC_DIR/robots.txt" "$SRC_DIR/sitemap.xml"; do
 done
 # Файл проверки IndexNow нужен на боевом REG.RU; ранее сюда не копировался.
 publish_file "$SRC_DIR/$INDEXNOW_KEY.txt"
+# Сохраняем любые существующие пользовательские правила и добавляем
+# собственную секцию canonical в начало .htaccess. При 500/цикле — откат.
+install_canonical_redirects() {
+  redirect_source="$SRC_DIR/.htaccess"
+  redirect_target="$SITE_DIR/.htaccess"
+  [ -s "$redirect_source" ] && [ ! -L "$redirect_source" ] || {
+    echo 'WARNING: исходная секция canonical не найдена; пропуск' >&2
+    return 0
+  }
+  if [ -L "$redirect_target" ]; then
+    echo 'WARNING: .htaccess является ссылкой — не изменён' >&2
+    return 0
+  fi
+  if [ -e "$redirect_target" ] && [ ! -f "$redirect_target" ]; then
+    echo 'WARNING: .htaccess не обычный файл — не изменён' >&2
+    return 0
+  fi
+  if [ -f "$redirect_target" ] && grep -q '^# BEGIN ZEUS CANONICAL "$redirect_target"; then
+    echo 'CANONICAL: управляемый блок уже существует; не дублируем'
+    return 0
+  fi
+  if ! command -v curl >/dev/null 2>&1; then
+    echo 'WARNING: без curl нельзя безопасно проверить редирект; пропуск' >&2
+    return 0
+  fi
+  had_old=no
+  if [ -f "$redirect_target" ]; then
+    had_old=yes
+    cp -p "$redirect_target" "$WORK_DIR/previous-htaccess"
+  fi
+  temporary=$(mktemp "$SITE_DIR/.zeus-htaccess.XXXXXXXX") || exit 1
+  cat "$redirect_source" > "$temporary"
+  if [ "$had_old" = yes ]; then
+    printf '\n' >> "$temporary"
+    cat "$WORK_DIR/previous-htaccess" >> "$temporary"
+  fi
+  chmod 644 "$temporary"
+  mv -f "$temporary" "$redirect_target"
+  # Cache-busting path checks cover both the HTTP 301 and HTTPS 200.
+  nonce="zeus-redirect-$"
+  redirect_result=$(curl -sS --connect-timeout 7 --max-time 20 -o /dev/null \
+      -w '%{http_code} %{redirect_url}' "http://$DOMAIN/robots.txt?$nonce") || redirect_result=''
+  secure_status=$(curl -sS --connect-timeout 7 --max-time 20 -o /dev/null \
+      -w '%{http_code}' "https://$DOMAIN/robots.txt?$nonce") || secure_status=''
+  case "$redirect_result" in
+    "301 https://$DOMAIN/robots.txt?$nonce")
+      if [ "$secure_status" = 200 ]; then
+        echo 'CANONICAL PASS: HTTP 301 to HTTPS; HTTPS 200'
+        return 0
+      fi ;;
+  esac
+  echo "WARNING: canonical smoke check failed (HTTP=$redirect_result; HTTPS=$secure_status); restoring previous .htaccess" >&2
+  if [ "$had_old" = yes ]; then
+    cp -p "$WORK_DIR/previous-htaccess" "$redirect_target"
+  else
+    rm -f "$redirect_target"
+  fi
+  return 0
+}
+install_canonical_redirects
 echo "Готово: обновлено публичных файлов — $COUNT; сайт — $DOMAIN"
