@@ -122,7 +122,7 @@ install_canonical_redirects() {
     echo 'WARNING: .htaccess не обычный файл — не изменён' >&2
     return 0
   fi
-  if [ -f "$redirect_target" ] && grep -q '^# BEGIN ZEUS CANONICAL "$redirect_target"; then
+  if [ -f "$redirect_target" ] && grep -q 'BEGIN ZEUS CANONICAL' "$redirect_target"; then
     echo 'CANONICAL: управляемый блок уже существует; не дублируем'
     return 0
   fi
@@ -144,7 +144,7 @@ install_canonical_redirects() {
   chmod 644 "$temporary"
   mv -f "$temporary" "$redirect_target"
   # Cache-busting path checks cover both the HTTP 301 and HTTPS 200.
-  nonce="zeus-redirect-$"
+  nonce="zeus-redirect-$(date +%s)"
   redirect_result=$(curl -sS --connect-timeout 7 --max-time 20 -o /dev/null \
       -w '%{http_code} %{redirect_url}' "http://$DOMAIN/robots.txt?$nonce") || redirect_result=''
   secure_status=$(curl -sS --connect-timeout 7 --max-time 20 -o /dev/null \
