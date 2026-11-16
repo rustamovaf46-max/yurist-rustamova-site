@@ -1,9 +1,4 @@
 {
-  "operation": "recrawl",
-  "urls": [
-    "https://xn--80aafwvmkbibjcl2m.xn--p1ai/",
-    "https://xn--80aafwvmkbibjcl2m.xn--p1ai/sudebnaya-praktika-i-obraztsy.html",
-    "https://xn--80aafwvmkbibjcl2m.xn--p1ai/predstavitelstvo-v-sude-moskva.html",
-    "https://xn--80aafwvmkbibjcl2m.xn--p1ai/advokatura-sudebnoe-predstavitelstvo-proekt-professionalizatsii-2026.html"
-  ]
+  "operation": "audit",
+  "urls": []
 }
