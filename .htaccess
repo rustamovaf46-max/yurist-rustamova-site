@@ -1,0 +1,11 @@
+# BEGIN ZEUS CANONICAL
+# HTTPS + non-www canonical, including article paths.
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{HTTP_HOST} !^xn--80aafwvmkbibjcl2m\.xn--p1ai$ [NC]
+RewriteRule ^ https://xn--80aafwvmkbibjcl2m.xn--p1ai%{REQUEST_URI} [R=301,L,NE]
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !^https$ [NC]
+RewriteRule ^ https://xn--80aafwvmkbibjcl2m.xn--p1ai%{REQUEST_URI} [R=301,L,NE]
+</IfModule>
+# END ZEUS CANONICAL
