@@ -10,6 +10,8 @@ on:
       - 'sitemap.xml'
       - 'robots.txt'
       - 'scripts/seo_audit.py'
+      - 'scripts/reg-ru-deploy.sh'
+      - '.htaccess'
       - '.github/workflows/zeus-seo-audit.yml'
 permissions:
   contents: read
@@ -22,5 +24,11 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - name: Validate REG.RU publishing shell and canonical rules
+        run: |
+          sh -n scripts/reg-ru-deploy.sh
+          grep -q 'BEGIN ZEUS CANONICAL' .htaccess
+          grep -q 'END ZEUS CANONICAL' .htaccess
+          grep -q 'R=301' .htaccess
       - name: Audit all published pages and sitemap
         run: python3 scripts/seo_audit.py
