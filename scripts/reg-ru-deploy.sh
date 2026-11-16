@@ -88,10 +88,12 @@ publish_file() {
   mv -f "$temp_file" "$target_file"
   COUNT=$((COUNT + 1))
 }
-# Разворачиваем оба подтверждённых портрета ДО публикации HTML.
-# Прежние файлы сохраняем в репозитории на случай отката.
-publish_file "$SRC_DIR/assets/fatima-hero-sharp.webp"
-publish_file "$SRC_DIR/assets/fatima-portrait-natural.webp"
+# Сначала публикуем ресурсы, затем HTML: новые файлы картинок и видео
+# не должны приводить к 404 после публикации страниц. Старые файлы не удаляем.
+for f in "$SRC_DIR"/assets/*; do
+  [ -f "$f" ] || continue
+  publish_file "$f"
+done
 for f in "$SRC_DIR"/*.html; do
   [ -f "$f" ] || continue
   case "${f##*/}" in
