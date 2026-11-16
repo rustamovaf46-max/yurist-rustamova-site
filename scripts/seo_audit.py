@@ -31,10 +31,21 @@ class Scan(HTMLParser):
         self.robots = ""
         self.canonicals = []
         self.links = []
+        self.ids = set()
+        self.images = []
+        self.assets = []
         self.analytics_script = False
 
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
+        if a.get("id"):
+            self.ids.add(a["id"])
+        if tag in ("img", "video", "audio", "source", "script"):
+            for attr in ("src", "poster"):
+                if a.get(attr):
+                    self.assets.append(a[attr])
+        if tag == "link" and a.get("href"):
+            self.assets.append(a["href"])
         if tag == "title":
             self.in_title = True
             self.title_count += 1
@@ -133,6 +144,30 @@ def main():
             target = local_name(urljoin(expected, href))
             if target and target.endswith(".html") and target not in published and target not in EXCLUDED:
                 errors.append(name + ": broken internal HTML link to " + target)
+    # Verify anchors against the destination file, not only link filenames.
+    # A static link to a nonexistent #fragment renders a clickable but broken
+    # service button; a valid target must exist in the HTML at build time.
+    for name, page in sorted(scans.items()):
+        here = urljoin(SITE, "" if name == "index.html" else name)
+        for href in page.links:
+            parsed = urlparse(urljoin(here, href))
+            if parsed.hostname != HOST or not parsed.fragment:
+                continue
+            target = local_name(parsed.geturl())
+            if not target or target not in scans:
+                continue
+            fragment = unquote(parsed.fragment)
+            if fragment not in scans[target].ids:
+                warnings.append(name + ": broken internal section anchor " + href + " (missing #" + fragment + " in " + target + ")")
+        for asset in page.assets:
+            parsed = urlparse(urljoin(here, asset))
+            if parsed.hostname != HOST:
+                continue
+            if parsed.path.startswith("/assets/"):
+                asset_path = ROOT / unquote(parsed.path).lstrip("/")
+                if not asset_path.is_file():
+                    errors.append(name + ": missing local asset " + asset)
+
     if "sudebnaya-praktika-i-obraztsy.html" in scans:
         library = scans["sudebnaya-praktika-i-obraztsy.html"]
         listed = {local_name(h) for h in library.links}
