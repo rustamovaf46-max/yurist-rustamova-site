@@ -1,6 +1,8 @@
 name: Verify REG.RU live publication and canonical redirects
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '31 5 * * *'  # Daily REG.RU TLS and source consistency check
   push:
     branches: [main]
     paths:
