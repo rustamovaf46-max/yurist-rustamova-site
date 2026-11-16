@@ -43,5 +43,33 @@ class YandexOwnerSafetyTests(unittest.TestCase):
             req.assert_not_called()
 
 
+    def test_temporary_504_retries_and_succeeds(self):
+        from io import BytesIO
+        from unittest.mock import MagicMock
+        from urllib.error import HTTPError
+        failure = HTTPError(yw.API + "/user", 504, "Gateway Timeout", {}, BytesIO(b""))
+        response = MagicMock()
+        response.__enter__.return_value.read.return_value = b'{"user_id":42}'
+        with patch.dict(os.environ, {"YANDEX_WEBMASTER_TOKEN": "test-token"}):
+            with patch.object(yw, "urlopen", side_effect=[failure, response]) as open_mock:
+                with patch.object(yw.time, "sleep") as sleep_mock:
+                    self.assertEqual(yw.request("GET", "/user"), {"user_id": 42})
+                    self.assertEqual(open_mock.call_count, 2)
+                    sleep_mock.assert_called_once_with(1)
+
+    def test_auth_403_never_retries(self):
+        from io import BytesIO
+        from urllib.error import HTTPError
+        failure = HTTPError(yw.API + "/user", 403, "Forbidden", {}, BytesIO(b'{}'))
+        with patch.dict(os.environ, {"YANDEX_WEBMASTER_TOKEN": "test-token"}):
+            with patch.object(yw, "urlopen", side_effect=failure) as open_mock:
+                with patch.object(yw.time, "sleep") as sleep_mock:
+                    with self.assertRaisesRegex(yw.ApiError, "403"):
+                        yw.request("GET", "/user")
+                    open_mock.assert_called_once()
+                    sleep_mock.assert_not_called()
+
+
+
 if __name__ == "__main__":
     unittest.main()
