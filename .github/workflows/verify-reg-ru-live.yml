@@ -29,7 +29,7 @@ jobs:
           base = "https://" + domain
           ua = {"User-Agent": "Mozilla/5.0 Zeus-public-site-smoke/1.0",
                 "Cache-Control": "no-cache"}
-          expected_photos = ("assets/fatima-hero-sharp.webp", "assets/fatima-portrait-natural.webp")
+          expected_photos = ("assets/fatima-white-suit-hero.avif", "assets/fatima-portrait-natural.webp")
           errors = []
           def fetch(url):
               with urllib.request.urlopen(urllib.request.Request(url, headers=ua), timeout=25) as res:
