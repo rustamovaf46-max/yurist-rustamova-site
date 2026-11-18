@@ -47,9 +47,9 @@ jobs:
               for width in [280, 320, 360, 375, 390, 414, 430, 700, 768, 1024, 1440]:
                   page = browser.new_page(viewport={"width": width, "height": 880}, device_scale_factor=1)
                   page.goto(url)
-                  # Protect the two owner-approved originals from regression to older assets.
+                  # Protect the owner-approved photo assets from regression to older versions.
                   for selector, source in (
-                      (".hero-photo", "assets/fatima-hero-sharp.webp"),
+                      (".hero-photo", "assets/fatima-white-suit-hero.avif"),
                       (".about-photo-wrap img", "assets/fatima-portrait-natural.webp"),
                   ):
                       pic = page.locator(selector)
