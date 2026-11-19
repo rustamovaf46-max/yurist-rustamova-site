@@ -108,6 +108,36 @@ def audit(uid, hosts):
                 ][:10]
             except ApiError as exc:
                 info["recrawl_queue_error"] = str(exc)
+        # Read-only health data. A service outage must not be mistaken for a
+        # clean audit or invalidate the separately verified ownership check.
+        if (host_id and host.get("verified") and
+                urlparse(host.get("ascii_host_url", "")).scheme == "https"):
+            try:
+                summary = request("GET", endpoint(uid, host_id, "summary"))
+                info["search_summary"] = {
+                    "searchable_pages_count": summary.get("searchable_pages_count"),
+                    "excluded_pages_count": summary.get("excluded_pages_count"),
+                    "sqi": summary.get("sqi"),
+                    "site_problems": summary.get("site_problems"),
+                }
+            except ApiError as exc:
+                info["search_summary_error"] = str(exc)
+            try:
+                diagnostic = request("GET", endpoint(uid, host_id, "diagnostics"))
+                problems = diagnostic.get("problems")
+                if not isinstance(problems, dict):
+                    info["diagnostics_error"] = "Unexpected diagnostics response (problems missing)"
+                else:
+                    info["diagnostics_checked"] = True
+                    info["diagnostics_non_absent"] = [
+                        {"code": code, "severity": details.get("severity"),
+                         "state": details.get("state"),
+                         "last_state_update": details.get("last_state_update")}
+                        for code, details in sorted(problems.items())
+                        if isinstance(details, dict) and details.get("state") != "ABSENT"
+                    ]
+            except ApiError as exc:
+                info["diagnostics_error"] = str(exc)
         print(json.dumps(info, ensure_ascii=False))
     return 0 if any(h.get("verified") and urlparse(h.get("ascii_host_url", "")).scheme == "https" for h in matches) else 2
 
