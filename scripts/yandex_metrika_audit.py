@@ -51,6 +51,35 @@ def main():
             {"id": g.get("id"), "name": g.get("name"), "type": g.get("type")}
             for g in goals.get("goals", [])
         ]
+        # Query actual aggregated goal reaches, not merely the list of configured goals.
+        # A reach is a website action, never proof of a completed call or signed contract.
+        goal_reaches = None
+        goal_reaches_error = None
+        metric_goals = [
+            goal for goal in goal_names
+            if isinstance(goal.get("id"), int) and goal["id"] > 0
+        ][:18]  # Yandex Reports API allows at most 20 metrics per request.
+        if metric_goals:
+            try:
+                conversions = get("/stat/v1/data", {
+                    "ids": COUNTER,
+                    "metrics": ",".join(
+                        "ym:s:goal" + str(goal["id"]) + "reaches"
+                        for goal in metric_goals
+                    ),
+                    "date1": "7daysAgo",
+                    "date2": "yesterday",
+                    "accuracy": "full",
+                })
+                values = conversions.get("totals", [])
+                if len(values) != len(metric_goals):
+                    raise RuntimeError("Missing conversion totals in Yandex response")
+                goal_reaches = [
+                    {"id": goal["id"], "name": goal["name"], "reaches_7d": value}
+                    for goal, value in zip(metric_goals, values)
+                ]
+            except (RuntimeError, ValueError, TypeError) as exc:
+                goal_reaches_error = str(exc)
         result = {
             "counter_id": COUNTER,
             "counter_status": counter.get("status"),
@@ -58,6 +87,8 @@ def main():
             "visits_7d": totals[0],
             "users_7d": totals[1],
             "goals": goal_names,
+            "goal_reaches_7d": goal_reaches,
+            "goal_reaches_error": goal_reaches_error,
         }
         output = "## ZEUS — Яндекс Метрика (только чтение)\n\n" + (
             "- Счётчик: **" + str(COUNTER) + "**\n" +
@@ -66,6 +97,14 @@ def main():
             "- Целей: **" + str(len(goal_names)) + "**\n\n" +
             "Нажатия на телефон/мессенджер не равны подтвержденным судебным заказам.\n"
         )
+        if goal_reaches is not None:
+            output += "\n**Достижения целей за 7 дней (не подтверждённые заявки):**\n"
+            for goal in goal_reaches:
+                output += "- " + str(goal["name"]) + ": **" + str(goal["reaches_7d"]) + "**\n"
+        else:
+            output += "\nДостижения целей: **нет достоверных данных**; " + (
+                goal_reaches_error or "запрос не выполнен"
+            ) + "\n"
         print(json.dumps(result, ensure_ascii=False, indent=2))
         print(output)
         if os.environ.get("GITHUB_STEP_SUMMARY"):
