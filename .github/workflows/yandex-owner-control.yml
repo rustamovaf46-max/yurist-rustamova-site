@@ -4,7 +4,7 @@ on:
     - cron: '29 * * * *'
   push:
     branches: [main]
-    paths: ['.github/zeus-yandex-command.json', 'scripts/yandex_webmaster.py', 'tests/test_yandex_webmaster.py']
+    paths: ['.github/zeus-yandex-command.json', 'scripts/yandex_webmaster.py', 'tests/test_yandex_webmaster.py', '.github/workflows/yandex-owner-control.yml']
   workflow_dispatch:
     inputs:
       operation:
