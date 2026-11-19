@@ -199,7 +199,8 @@ jobs:
           # главная содержит услуги и обычные ссылки на библиотеку, но не карточки публикаций.
           catalog_url = BASE + "/sudebnaya-praktika-i-obraztsy.html"
           service_url = BASE + "/predstavitelstvo-v-sude-moskva.html"
-          library_pages = expected_articles - {catalog_url, service_url}
+          land_service_url = BASE + "/zemelnye-spory-yurist-moskva.html"
+          library_pages = expected_articles - {catalog_url, service_url, land_service_url}
           catalog_html, _ = fetch(catalog_url + "?run=" + run_id)
           verify_version("sudebnaya-praktika-i-obraztsy.html", catalog_html.encode("utf-8"))
           catalog = Page()
@@ -210,7 +211,7 @@ jobs:
               card_set = set(catalog.cards)
               duplicates = sorted(u for u in card_set if catalog.cards.count(u) > 1)
               raise RuntimeError(f"Library cards out of sync. Missing: {sorted(library_pages-card_set)}; extra: {sorted(card_set-library_pages)}; duplicates: {duplicates}")
-          if catalog_url not in home.links or service_url not in home.links:
+          if catalog_url not in home.links or service_url not in home.links or land_service_url not in home.links:
               raise RuntimeError("На главной нет ссылок на библиотеку и услугу представительства.")
           forbidden_homepage_markers = (
               'class="legal-article"',
