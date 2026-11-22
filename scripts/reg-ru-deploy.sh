@@ -167,4 +167,21 @@ install_canonical_redirects() {
   return 0
 }
 install_canonical_redirects
+
+# Статус физической выкладки REG.RU — записывать ПОСЛЕ копирования sitemap.
+# Публичный маркер не содержит учётных данных и позволяет отличать завершённый
+# cron от зелёного теста GitHub, который лишь увидел старую версию.
+STAMP=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+SITEMAP_COUNT=$(grep -c '<loc>' "$SITE_DIR/sitemap.xml" || true)
+SITEMAP_SUM=$(cksum "$SITE_DIR/sitemap.xml" | awk '{print $1 "-" $2}')
+HEALTH_TMP=$(mktemp "$SITE_DIR/.zeus-health.XXXXXXXX")
+{
+  echo "published_at_utc=$STAMP"
+  echo "sitemap_url_count=$SITEMAP_COUNT"
+  echo "sitemap_checksum=$SITEMAP_SUM"
+  echo "updated_files=$COUNT"
+} > "$HEALTH_TMP"
+chmod 644 "$HEALTH_TMP"
+mv -f "$HEALTH_TMP" "$SITE_DIR/zeus-sync-status.txt"
+echo "ZEUS REG.RU SYNC: time=$STAMP urls=$SITEMAP_COUNT checksum=$SITEMAP_SUM updated=$COUNT"
 echo "Готово: обновлено публичных файлов — $COUNT; сайт — $DOMAIN"
