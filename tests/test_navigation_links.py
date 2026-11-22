@@ -59,6 +59,12 @@ class NavigationRegressionTests(unittest.TestCase):
         self.assertIn("Мобильная навигация", parsed.nav_labels)
         self.assertIn("Основная навигация", parsed.nav_labels)
         self.assertIn("mobile-nav", parsed.ids)
+        html = (ROOT / "index.html").read_text(encoding="utf-8")
+        self.assertIn('aria-controls="mobile-nav"', html)
+        self.assertIn('aria-expanded="false"', html)
+        self.assertIn('.mobile-nav[hidden]{display:none!important}', html)
+        self.assertIn("mobileMenu.hidden=open;", html)
+        self.assertIn("mobileMenu.hidden=true;", html)
 
     def test_local_links_on_all_sitemap_pages_resolve(self):
         sitemap = ElementTree.parse(ROOT / "sitemap.xml").getroot()
