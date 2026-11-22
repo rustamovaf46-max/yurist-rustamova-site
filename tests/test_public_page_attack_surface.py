@@ -17,10 +17,13 @@ class PublicSurface(HTMLParser):
     def __init__(self):
         super().__init__(convert_charrefs=True)
         self.alerts = []
+        self.links = []
 
     def handle_starttag(self, tag, attrs):
         tag = tag.lower()
         attr = {key.lower(): (value or "") for key, value in attrs}
+        if tag == "a" and attr.get("href"):
+            self.links.append(attr["href"])
         if tag in {"a", "area"} and attr.get("href", "").strip().lower().startswith(("javascript:", "data:", "vbscript:")):
             self.alerts.append("unsafe link protocol")
         if tag in {"a", "area"} and attr.get("target", "").lower() == "_blank":
@@ -60,6 +63,19 @@ class PublicPageAttackSurfaceTests(unittest.TestCase):
                 checker.feed(local.read_text(encoding="utf-8"))
                 self.assertEqual(checker.alerts, [], "Unexpected browser injection or interception path")
         self.assertEqual(len(paths), 51)
+
+    def test_home_contact_channels_remain_approved(self):
+        home = PublicSurface()
+        home.feed((ROOT / "index.html").read_text(encoding="utf-8"))
+        phone = "tel:+79099282398"
+        max_link = "https://max.ru/u/f9LHodD0cOJXOThelfL4zEZsDHL2apF2b_WxxjVt948nXhHX6XZt-opsspM"
+        self.assertIn(phone, home.links, "Main phone contact removed or changed")
+        self.assertIn(max_link, home.links, "Main MAX contact removed or changed")
+        for href in home.links:
+            if href.startswith(("tel:", "sms:", "mailto:")):
+                self.assertEqual(href, phone, "Unexpected direct contact destination")
+            if urlparse(href).hostname == "max.ru":
+                self.assertEqual(href, max_link, "Unexpected MAX contact destination")
 
     def test_consent_guard_is_the_only_yandex_loader(self):
         script = (ROOT / "analytics-consent.js").read_text(encoding="utf-8")
