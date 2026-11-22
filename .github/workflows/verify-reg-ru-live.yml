@@ -80,6 +80,18 @@ jobs:
                   errors.append("Live CSP missing anti-framing and object-src controls")
               if "max-age=" not in security_headers.get("strict-transport-security", ""):
                   errors.append("Live HSTS header missing")
+              print("SECURITY RESPONSE HEADERS:", sorted(security_headers.keys()))
+              # This status contains only timestamp, checksum and a yes/no header flag.
+              # It never contains visitors, contacts, tokens or customer data.
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(
+                      base + "/zeus-sync-status.txt?security-check=1", headers=ua), timeout=20) as sync:
+                      public_status = sync.read(1200).decode("utf-8", errors="replace")
+                  for value in public_status.splitlines():
+                      if value.startswith(("published_at_utc=", "sitemap_url_count=", "updated_files=", "security_headers_verified=")):
+                          print("REG.RU DEPLOY MARKER:", value)
+              except Exception as marker_exc:
+                  print("REG.RU DEPLOY MARKER UNAVAILABLE:", type(marker_exc).__name__)
               print("SECURITY LIVE", "headers verified" if not [
                   e for e in errors if "security" in e.lower() or "CSP" in e
               ] else "security headers not fully verified")
