@@ -1,0 +1,26 @@
+name: Navigation regression tests
+on:
+  pull_request:
+    paths:
+      - '**.html'
+      - 'tests/test_navigation_links.py'
+      - '.github/workflows/navigation-regression.yml'
+  push:
+    branches: [main]
+    paths:
+      - '**.html'
+      - 'tests/test_navigation_links.py'
+      - '.github/workflows/navigation-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  navigation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check navigation and internal links
+        run: python -m unittest discover -s tests -p test_navigation_links.py -v
