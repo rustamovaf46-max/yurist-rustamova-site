@@ -1,15 +1,4 @@
 {
-  "operation": "recrawl",
-  "urls": [
-    "https://xn--80aafwvmkbibjcl2m.xn--p1ai/",
-    "https://xn--80aafwvmkbibjcl2m.xn--p1ai/predstavitelstvo-v-sude-moskva.html",
-    "https://xn--80aafwvmkbibjcl2m.xn--p1ai/zemelnye-spory-yurist-moskva.html",
-    "https://xn--80aafwvmkbibjcl2m.xn--p1ai/semeynye-spory-yurist-moskva.html",
-    "https://xn--80aafwvmkbibjcl2m.xn--p1ai/nasledstvennye-spory-yurist-moskva.html",
-    "https://xn--80aafwvmkbibjcl2m.xn--p1ai/zhilishchnye-spory-yurist-moskva.html",
-    "https://xn--80aafwvmkbibjcl2m.xn--p1ai/arbitrazhnye-spory-yurist-moskva.html",
-    "https://xn--80aafwvmkbibjcl2m.xn--p1ai/pensionnye-spory-sfr-sud-moskva.html",
-    "https://xn--80aafwvmkbibjcl2m.xn--p1ai/voennye-spory-vyplaty-semyam-moskva.html",
-    "https://xn--80aafwvmkbibjcl2m.xn--p1ai/sudebnyy-yurist-goroda-moskovskoy-oblasti.html"
-  ]
+  "operation": "audit",
+  "urls": []
 }
