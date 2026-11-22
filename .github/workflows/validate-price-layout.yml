@@ -40,7 +40,7 @@ jobs:
           catalog_url = base + "sudebnaya-praktika-i-obraztsy.html"
           service_url = base + "predstavitelstvo-v-sude-moskva.html"
           land_service_url = base + "zemelnye-spory-yurist-moskva.html"
-          expected_library = expected_articles - {catalog_url, service_url, land_service_url}
+          expected_library = expected_articles - {catalog_url, service_url, land_service_url, base + "semeynye-spory-yurist-moskva.html"}
           assert expected_library, "No legal articles in sitemap"
           from playwright.sync_api import sync_playwright
           url = pathlib.Path("index.html").resolve().as_uri()
