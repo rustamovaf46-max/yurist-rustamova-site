@@ -173,7 +173,8 @@ def main():
         listed = {local_name(h) for h in library.links}
         for name in sorted(published - {"index.html", "privacy-policy.html",
                                         "sudebnaya-praktika-i-obraztsy.html",
-                                        "zemelnye-spory-yurist-moskva.html", "semeynye-spory-yurist-moskva.html"}):
+                                        "zemelnye-spory-yurist-moskva.html", "semeynye-spory-yurist-moskva.html",
+                                        "nasledstvennye-spory-yurist-moskva.html"}):
             if name not in listed:
                 warnings.append(name + ": no direct link from articles library")
     report = [
