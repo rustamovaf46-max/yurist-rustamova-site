@@ -2,6 +2,7 @@
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
+from xml.etree import ElementTree
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -59,8 +60,17 @@ class NavigationRegressionTests(unittest.TestCase):
         self.assertIn("Основная навигация", parsed.nav_labels)
         self.assertIn("mobile-nav", parsed.ids)
 
-    def test_local_links_on_core_pages_resolve(self):
-        pages = ("index.html", "sudebnaya-praktika-i-obraztsy.html", *SERVICE_PAGES)
+    def test_local_links_on_all_sitemap_pages_resolve(self):
+        sitemap = ElementTree.parse(ROOT / "sitemap.xml").getroot()
+        pages = []
+        for item in sitemap:
+            node = item.find("{*}loc")
+            if node is not None and node.text:
+                url = urlsplit(node.text.strip())
+                self.assertEqual(url.scheme, "https")
+                self.assertEqual(url.hostname, "xn--80aafwvmkbibjcl2m.xn--p1ai")
+                pages.append(unquote(url.path).lstrip("/") or "index.html")
+        self.assertEqual(len(pages), 51)
         for page in pages:
             parsed = parse_page(ROOT / page)
             for href in parsed.links:
@@ -69,7 +79,9 @@ class NavigationRegressionTests(unittest.TestCase):
                     continue
                 local = unquote(url.path).lstrip("/") or "index.html"
                 with self.subTest(page=page, href=href):
-                    self.assertTrue((ROOT / local).is_file(), f"{page}: missing {href}")
+                    target = (ROOT / local).resolve()
+                    self.assertTrue(target.is_relative_to(ROOT), f"{page}: unsafe path {href}")
+                    self.assertTrue(target.is_file(), f"{page}: missing {href}")
 
 
 if __name__ == "__main__":
