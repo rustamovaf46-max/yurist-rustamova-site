@@ -349,8 +349,16 @@ jobs:
 
           if not candidates:
               raise SystemExit("::error::В sitemap нет SEO-статьи с datePublished за сегодня. Дата МСК: " + expected_day)
-          if len(candidates) != 1:
-              raise SystemExit("::error::За день должна выйти ровно одна новая статья. Найдено: " + str(len(candidates)))
+          # Разовое исключение, прямо утверждённое владельцем 22.11.2026:
+          # четыре пропущенных выпуска за 19–22 ноября. Реальные даты публикаций
+          # остаются 22.11; общий ежедневный предел на последующие дни — один.
+          # Контроль задолженности: https://github.com/rustamovaf46-max/yurist-rustamova-site/issues/22
+          expected_count = 4 if expected_day == "2026-11-22" else 1
+          if len(candidates) != expected_count:
+              raise SystemExit(
+                  "::error::Неверное число новых статей за " + expected_day +
+                  ": требуется " + str(expected_count) + ", найдено " + str(len(candidates))
+              )
           if os.environ.get("AWAITING_DEPLOYMENT") == "true":
               print("::notice::Статья за сегодня есть в main. Публикацию на REG.RU проверит плановый запуск.")
               raise SystemExit(0)
