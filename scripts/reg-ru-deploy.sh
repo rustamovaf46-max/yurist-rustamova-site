@@ -241,11 +241,15 @@ install_security_rules
 STAMP=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
 SITEMAP_COUNT=$(grep -c '<loc>' "$SITE_DIR/sitemap.xml" || true)
 SITEMAP_SUM=$(cksum "$SITE_DIR/sitemap.xml" | awk '{print $1 "-" $2}')
+HOME_SUM=$(cksum "$SITE_DIR/index.html" | awk '{print $1 "-" $2}')
+PRIVACY_SUM=$(cksum "$SITE_DIR/privacy-policy.html" | awk '{print $1 "-" $2}')
 HEALTH_TMP=$(mktemp "$SITE_DIR/.zeus-health.XXXXXXXX")
 {
   echo "published_at_utc=$STAMP"
   echo "sitemap_url_count=$SITEMAP_COUNT"
   echo "sitemap_checksum=$SITEMAP_SUM"
+  echo "homepage_checksum=$HOME_SUM"
+  echo "privacy_policy_checksum=$PRIVACY_SUM"
   echo "updated_files=$COUNT"
   echo "security_headers_verified=$SECURITY_APPLIED"
 } > "$HEALTH_TMP"
