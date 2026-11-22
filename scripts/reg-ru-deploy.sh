@@ -247,6 +247,7 @@ HEALTH_TMP=$(mktemp "$SITE_DIR/.zeus-health.XXXXXXXX")
   echo "sitemap_url_count=$SITEMAP_COUNT"
   echo "sitemap_checksum=$SITEMAP_SUM"
   echo "updated_files=$COUNT"
+  echo "security_headers_verified=$SECURITY_APPLIED"
 } > "$HEALTH_TMP"
 chmod 644 "$HEALTH_TMP"
 mv -f "$HEALTH_TMP" "$SITE_DIR/zeus-sync-status.txt"
