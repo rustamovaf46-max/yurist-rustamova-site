@@ -40,7 +40,13 @@ jobs:
           catalog_url = base + "sudebnaya-praktika-i-obraztsy.html"
           service_url = base + "predstavitelstvo-v-sude-moskva.html"
           land_service_url = base + "zemelnye-spory-yurist-moskva.html"
-          expected_library = expected_articles - {catalog_url, service_url, land_service_url, base + "semeynye-spory-yurist-moskva.html", base + "nasledstvennye-spory-yurist-moskva.html"}
+          expected_library = expected_articles - {catalog_url, service_url, land_service_url, base + "semeynye-spory-yurist-moskva.html", base + "nasledstvennye-spory-yurist-moskva.html",
+                                            base + "zhilishchnye-spory-yurist-moskva.html",
+                                            base + "arbitrazhnye-spory-yurist-moskva.html",
+                                            base + "pensionnye-spory-sfr-sud-moskva.html",
+                                            base + "voennye-spory-vyplaty-semyam-moskva.html",
+                                            base + "sudebnyy-yurist-goroda-moskovskoy-oblasti.html",
+                                            base + "sudebnyy-yurist-moskva-stantsii-metro.html"}
           assert expected_library, "No legal articles in sitemap"
           from playwright.sync_api import sync_playwright
           url = pathlib.Path("index.html").resolve().as_uri()
@@ -167,14 +173,21 @@ jobs:
                       assert page.evaluate("document.documentElement.scrollWidth") <= width, f"{filename}: overflow at {width}"
                       max_links = page.locator('a[href^="https://max.ru/"]')
                       is_catalog = filename == "sudebnaya-praktika-i-obraztsy.html"
-                      assert max_links.count() >= (2 if is_catalog else 3) and all(href == max_url for href in max_links.evaluate_all("links => links.map(a => a.href)")), filename
-                      if not is_catalog:
+                      is_geography = filename in ("sudebnyy-yurist-goroda-moskovskoy-oblasti.html", "sudebnyy-yurist-moskva-stantsii-metro.html")
+                      assert max_links.count() >= (2 if is_catalog or is_geography else 3) and all(href == max_url for href in max_links.evaluate_all("links => links.map(a => a.href)")), filename
+                      if is_geography:
+                          assert page.locator('input[type="search"]').count()==1, filename + ": geographical search"
+                          if filename.endswith("goroda-moskovskoy-oblasti.html"):
+                              assert page.locator(".city-item").count()==74, filename + ": all 74 cities"
+                          else:
+                              assert page.locator(".metro-station").count()==278, filename + ": all 278 metro stations"
+                      elif not is_catalog:
                           assert page.locator(".hero a").filter(has_text="MAX").is_visible(), filename + ": top MAX"
                           assert page.locator(".cta-panel a").filter(has_text="MAX").is_visible(), filename + ": CTA MAX"
                       else:
                           assert page.locator(".library-toolbar input").count()==1, filename + ": library search"
                           assert page.locator("#library-grid .legal-article").count()>=1, filename + ": library cards"
-                      assert page.locator('a[href="tel:+79099282398"]').count() >= (2 if is_catalog else 3), filename + ": telephone"
+                      assert page.locator('a[href="tel:+79099282398"]').count() >= (2 if is_catalog or is_geography else 3), filename + ": telephone"
                       if width <= 768 and not is_catalog:
                           assert page.locator(".mobile-bottom").is_visible(), filename + ": mobile contacts"
                       assert not errors, f"{filename}: JavaScript errors {errors}"
