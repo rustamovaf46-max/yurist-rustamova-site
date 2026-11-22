@@ -7,6 +7,10 @@ on:
     branches: [main]
     paths:
       - .github/workflows/verify-reg-ru-live.yml
+      - scripts/reg-ru-deploy.sh
+      - .htaccess
+      - privacy-policy.html
+      - tests/test_site_security.py
 permissions:
   contents: read
 jobs:
