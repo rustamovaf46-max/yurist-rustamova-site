@@ -35,6 +35,16 @@ class SiteSecurityTests(unittest.TestCase):
                                 capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("install_security_rules()", script)
+        # Regression: enforce exact shell commands, not mere shell syntax.
+        expected_markers = (
+            "source_begin=$(grep -c '^# BEGIN ZEUS SECURITY$' \"$source_file\" || true)",
+            "source_end=$(grep -c '^# END ZEUS SECURITY$' \"$source_file\" || true)",
+            "target_begin=$(grep -c '^# BEGIN ZEUS SECURITY$' \"$target_file\" || true)",
+            "target_end=$(grep -c '^# END ZEUS SECURITY$' \"$target_file\" || true)",
+        )
+        for command in expected_markers:
+            self.assertEqual(script.count(command), 1, 'Malformed security grep: ' + command)
+        self.assertNotIn('SECURITY — записывать ПОСЛЕ', script)
         self.assertIn("install_security_rules\n", script)
         self.assertIn("security_headers_verified=$SECURITY_APPLIED", script)
         self.assertIn("SECURITY_APPLIED=yes", script)
