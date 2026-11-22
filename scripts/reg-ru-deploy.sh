@@ -184,79 +184,10 @@ install_security_rules() {
     echo 'WARNING: cannot verify security headers without curl; no security change made' >&2
     return 0
   fi
-  source_begin=$(grep -c '^# BEGIN ZEUS SECURITY — записывать ПОСЛЕ копирования sitemap.
-# Публичный маркер не содержит учётных данных и позволяет отличать завершённый
-# cron от зелёного теста GitHub, который лишь увидел старую версию.
-STAMP=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
-SITEMAP_COUNT=$(grep -c '<loc>' "$SITE_DIR/sitemap.xml" || true)
-SITEMAP_SUM=$(cksum "$SITE_DIR/sitemap.xml" | awk '{print $1 "-" $2}')
-HEALTH_TMP=$(mktemp "$SITE_DIR/.zeus-health.XXXXXXXX")
-{
-  echo "published_at_utc=$STAMP"
-  echo "sitemap_url_count=$SITEMAP_COUNT"
-  echo "sitemap_checksum=$SITEMAP_SUM"
-  echo "updated_files=$COUNT"
-  echo "security_headers_verified=$SECURITY_APPLIED"
-} > "$HEALTH_TMP"
-chmod 644 "$HEALTH_TMP"
-mv -f "$HEALTH_TMP" "$SITE_DIR/zeus-sync-status.txt"
-echo "ZEUS REG.RU SYNC: time=$STAMP urls=$SITEMAP_COUNT checksum=$SITEMAP_SUM updated=$COUNT"
-echo "Готово: обновлено публичных файлов — $COUNT; сайт — $DOMAIN"
- "$source_file" || true)
-  source_end=$(grep -c '^# END ZEUS SECURITY — записывать ПОСЛЕ копирования sitemap.
-# Публичный маркер не содержит учётных данных и позволяет отличать завершённый
-# cron от зелёного теста GitHub, который лишь увидел старую версию.
-STAMP=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
-SITEMAP_COUNT=$(grep -c '<loc>' "$SITE_DIR/sitemap.xml" || true)
-SITEMAP_SUM=$(cksum "$SITE_DIR/sitemap.xml" | awk '{print $1 "-" $2}')
-HEALTH_TMP=$(mktemp "$SITE_DIR/.zeus-health.XXXXXXXX")
-{
-  echo "published_at_utc=$STAMP"
-  echo "sitemap_url_count=$SITEMAP_COUNT"
-  echo "sitemap_checksum=$SITEMAP_SUM"
-  echo "updated_files=$COUNT"
-} > "$HEALTH_TMP"
-chmod 644 "$HEALTH_TMP"
-mv -f "$HEALTH_TMP" "$SITE_DIR/zeus-sync-status.txt"
-echo "ZEUS REG.RU SYNC: time=$STAMP urls=$SITEMAP_COUNT checksum=$SITEMAP_SUM updated=$COUNT"
-echo "Готово: обновлено публичных файлов — $COUNT; сайт — $DOMAIN"
- "$source_file" || true)
-  target_begin=$(grep -c '^# BEGIN ZEUS SECURITY — записывать ПОСЛЕ копирования sitemap.
-# Публичный маркер не содержит учётных данных и позволяет отличать завершённый
-# cron от зелёного теста GitHub, который лишь увидел старую версию.
-STAMP=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
-SITEMAP_COUNT=$(grep -c '<loc>' "$SITE_DIR/sitemap.xml" || true)
-SITEMAP_SUM=$(cksum "$SITE_DIR/sitemap.xml" | awk '{print $1 "-" $2}')
-HEALTH_TMP=$(mktemp "$SITE_DIR/.zeus-health.XXXXXXXX")
-{
-  echo "published_at_utc=$STAMP"
-  echo "sitemap_url_count=$SITEMAP_COUNT"
-  echo "sitemap_checksum=$SITEMAP_SUM"
-  echo "updated_files=$COUNT"
-} > "$HEALTH_TMP"
-chmod 644 "$HEALTH_TMP"
-mv -f "$HEALTH_TMP" "$SITE_DIR/zeus-sync-status.txt"
-echo "ZEUS REG.RU SYNC: time=$STAMP urls=$SITEMAP_COUNT checksum=$SITEMAP_SUM updated=$COUNT"
-echo "Готово: обновлено публичных файлов — $COUNT; сайт — $DOMAIN"
- "$target_file" || true)
-  target_end=$(grep -c '^# END ZEUS SECURITY — записывать ПОСЛЕ копирования sitemap.
-# Публичный маркер не содержит учётных данных и позволяет отличать завершённый
-# cron от зелёного теста GitHub, который лишь увидел старую версию.
-STAMP=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
-SITEMAP_COUNT=$(grep -c '<loc>' "$SITE_DIR/sitemap.xml" || true)
-SITEMAP_SUM=$(cksum "$SITE_DIR/sitemap.xml" | awk '{print $1 "-" $2}')
-HEALTH_TMP=$(mktemp "$SITE_DIR/.zeus-health.XXXXXXXX")
-{
-  echo "published_at_utc=$STAMP"
-  echo "sitemap_url_count=$SITEMAP_COUNT"
-  echo "sitemap_checksum=$SITEMAP_SUM"
-  echo "updated_files=$COUNT"
-} > "$HEALTH_TMP"
-chmod 644 "$HEALTH_TMP"
-mv -f "$HEALTH_TMP" "$SITE_DIR/zeus-sync-status.txt"
-echo "ZEUS REG.RU SYNC: time=$STAMP urls=$SITEMAP_COUNT checksum=$SITEMAP_SUM updated=$COUNT"
-echo "Готово: обновлено публичных файлов — $COUNT; сайт — $DOMAIN"
- "$target_file" || true)
+  source_begin=$(grep -c '^# BEGIN ZEUS SECURITY$' "$source_file" || true)
+  source_end=$(grep -c '^# END ZEUS SECURITY$' "$source_file" || true)
+  target_begin=$(grep -c '^# BEGIN ZEUS SECURITY$' "$target_file" || true)
+  target_end=$(grep -c '^# END ZEUS SECURITY$' "$target_file" || true)
   if [ "$source_begin" -ne 1 ] || [ "$source_end" -ne 1 ] || \
      [ "$target_begin" -ne "$target_end" ] || [ "$target_begin" -gt 1 ]; then
     echo 'WARNING: security markers are malformed; no security change made' >&2
