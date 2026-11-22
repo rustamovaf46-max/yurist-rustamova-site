@@ -66,7 +66,7 @@ def evidence():
         p.feed(raw)
         meaningful = " ".join(p.text)[:2300]
         title = re.search(r"<title>([^<]+)</title>", raw, re.I)
-        desc = re.search(r'<meta\\s+name="description"\\s+content="([^"]+)"', raw, re.I)
+        desc = re.search(r'<meta\s+name="description"\s+content="([^"]+)"', raw, re.I)
         internal = sorted({a for a in p.links if a.startswith("/") and a.endswith(".html")})
         blocks.append(json.dumps({
             "page": "https://юриструстамова.рф/" + ("" if name == "index.html" else name),
