@@ -98,6 +98,8 @@
 .service-card{cursor:pointer;padding-bottom:74px}
 .service-card:focus-within{border-color:var(--gold)}
 .service-open{position:absolute;bottom:22px;left:28px;right:28px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:none;border:0;border-top:1px solid rgba(205,165,111,.28);color:#e6bd86;padding:13px 0 0;text-align:left;font-size:13px;letter-spacing:.25px}
+.service-card[data-service="family"]{min-height:342px;padding-bottom:112px}
+.service-card[data-service="family"] .family-service-link{position:relative;z-index:2;color:#e4bd86;font-size:14px;line-height:1.55}
 .service-open span{font-size:21px;transition:transform .15s}
 .service-open:hover span,.service-open:focus-visible span{transform:translate(3px,-3px)}
 .service-open:focus-visible{outline:2px solid #e8c18c;outline-offset:4px}
