@@ -168,6 +168,142 @@ install_canonical_redirects() {
 }
 install_canonical_redirects
 
+# Install and update ONLY ZEUS's managed security block while preserving the
+# host owner's other .htaccess rules. The previous deploy script deliberately
+# skipped .htaccess whenever ZEUS CANONICAL was already present: that would
+# prevent newly added security headers from ever reaching production.
+SECURITY_APPLIED=no
+install_security_rules() {
+  source_file="$SRC_DIR/.htaccess"
+  target_file="$SITE_DIR/.htaccess"
+  [ -f "$target_file" ] && [ ! -L "$target_file" ] || {
+    echo 'WARNING: .htaccess unavailable; security rules not installed' >&2
+    return 0
+  }
+  if ! command -v curl >/dev/null 2>&1; then
+    echo 'WARNING: cannot verify security headers without curl; no security change made' >&2
+    return 0
+  fi
+  source_begin=$(grep -c '^# BEGIN ZEUS SECURITY — записывать ПОСЛЕ копирования sitemap.
+# Публичный маркер не содержит учётных данных и позволяет отличать завершённый
+# cron от зелёного теста GitHub, который лишь увидел старую версию.
+STAMP=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+SITEMAP_COUNT=$(grep -c '<loc>' "$SITE_DIR/sitemap.xml" || true)
+SITEMAP_SUM=$(cksum "$SITE_DIR/sitemap.xml" | awk '{print $1 "-" $2}')
+HEALTH_TMP=$(mktemp "$SITE_DIR/.zeus-health.XXXXXXXX")
+{
+  echo "published_at_utc=$STAMP"
+  echo "sitemap_url_count=$SITEMAP_COUNT"
+  echo "sitemap_checksum=$SITEMAP_SUM"
+  echo "updated_files=$COUNT"
+  echo "security_headers_verified=$SECURITY_APPLIED"
+} > "$HEALTH_TMP"
+chmod 644 "$HEALTH_TMP"
+mv -f "$HEALTH_TMP" "$SITE_DIR/zeus-sync-status.txt"
+echo "ZEUS REG.RU SYNC: time=$STAMP urls=$SITEMAP_COUNT checksum=$SITEMAP_SUM updated=$COUNT"
+echo "Готово: обновлено публичных файлов — $COUNT; сайт — $DOMAIN"
+ "$source_file" || true)
+  source_end=$(grep -c '^# END ZEUS SECURITY — записывать ПОСЛЕ копирования sitemap.
+# Публичный маркер не содержит учётных данных и позволяет отличать завершённый
+# cron от зелёного теста GitHub, который лишь увидел старую версию.
+STAMP=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+SITEMAP_COUNT=$(grep -c '<loc>' "$SITE_DIR/sitemap.xml" || true)
+SITEMAP_SUM=$(cksum "$SITE_DIR/sitemap.xml" | awk '{print $1 "-" $2}')
+HEALTH_TMP=$(mktemp "$SITE_DIR/.zeus-health.XXXXXXXX")
+{
+  echo "published_at_utc=$STAMP"
+  echo "sitemap_url_count=$SITEMAP_COUNT"
+  echo "sitemap_checksum=$SITEMAP_SUM"
+  echo "updated_files=$COUNT"
+} > "$HEALTH_TMP"
+chmod 644 "$HEALTH_TMP"
+mv -f "$HEALTH_TMP" "$SITE_DIR/zeus-sync-status.txt"
+echo "ZEUS REG.RU SYNC: time=$STAMP urls=$SITEMAP_COUNT checksum=$SITEMAP_SUM updated=$COUNT"
+echo "Готово: обновлено публичных файлов — $COUNT; сайт — $DOMAIN"
+ "$source_file" || true)
+  target_begin=$(grep -c '^# BEGIN ZEUS SECURITY — записывать ПОСЛЕ копирования sitemap.
+# Публичный маркер не содержит учётных данных и позволяет отличать завершённый
+# cron от зелёного теста GitHub, который лишь увидел старую версию.
+STAMP=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+SITEMAP_COUNT=$(grep -c '<loc>' "$SITE_DIR/sitemap.xml" || true)
+SITEMAP_SUM=$(cksum "$SITE_DIR/sitemap.xml" | awk '{print $1 "-" $2}')
+HEALTH_TMP=$(mktemp "$SITE_DIR/.zeus-health.XXXXXXXX")
+{
+  echo "published_at_utc=$STAMP"
+  echo "sitemap_url_count=$SITEMAP_COUNT"
+  echo "sitemap_checksum=$SITEMAP_SUM"
+  echo "updated_files=$COUNT"
+} > "$HEALTH_TMP"
+chmod 644 "$HEALTH_TMP"
+mv -f "$HEALTH_TMP" "$SITE_DIR/zeus-sync-status.txt"
+echo "ZEUS REG.RU SYNC: time=$STAMP urls=$SITEMAP_COUNT checksum=$SITEMAP_SUM updated=$COUNT"
+echo "Готово: обновлено публичных файлов — $COUNT; сайт — $DOMAIN"
+ "$target_file" || true)
+  target_end=$(grep -c '^# END ZEUS SECURITY — записывать ПОСЛЕ копирования sitemap.
+# Публичный маркер не содержит учётных данных и позволяет отличать завершённый
+# cron от зелёного теста GitHub, который лишь увидел старую версию.
+STAMP=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
+SITEMAP_COUNT=$(grep -c '<loc>' "$SITE_DIR/sitemap.xml" || true)
+SITEMAP_SUM=$(cksum "$SITE_DIR/sitemap.xml" | awk '{print $1 "-" $2}')
+HEALTH_TMP=$(mktemp "$SITE_DIR/.zeus-health.XXXXXXXX")
+{
+  echo "published_at_utc=$STAMP"
+  echo "sitemap_url_count=$SITEMAP_COUNT"
+  echo "sitemap_checksum=$SITEMAP_SUM"
+  echo "updated_files=$COUNT"
+} > "$HEALTH_TMP"
+chmod 644 "$HEALTH_TMP"
+mv -f "$HEALTH_TMP" "$SITE_DIR/zeus-sync-status.txt"
+echo "ZEUS REG.RU SYNC: time=$STAMP urls=$SITEMAP_COUNT checksum=$SITEMAP_SUM updated=$COUNT"
+echo "Готово: обновлено публичных файлов — $COUNT; сайт — $DOMAIN"
+ "$target_file" || true)
+  if [ "$source_begin" -ne 1 ] || [ "$source_end" -ne 1 ] || \
+     [ "$target_begin" -ne "$target_end" ] || [ "$target_begin" -gt 1 ]; then
+    echo 'WARNING: security markers are malformed; no security change made' >&2
+    return 0
+  fi
+
+  backup="$WORK_DIR/security-htaccess-previous"
+  cp -p "$target_file" "$backup"
+  staged=$(mktemp "$SITE_DIR/.zeus-security.XXXXXXXX") || exit 1
+  # Delete only the prior ZEUS-managed segment, leave any user rules intact.
+  sed '/^# BEGIN ZEUS SECURITY$/,/^# END ZEUS SECURITY$/d' "$target_file" > "$staged"
+  printf '\n' >> "$staged"
+  sed -n '/^# BEGIN ZEUS SECURITY$/,/^# END ZEUS SECURITY$/p' "$source_file" >> "$staged"
+  chmod 644 "$staged"
+  changed=no
+  if cmp -s "$staged" "$target_file"; then
+    rm -f "$staged"
+  else
+    mv -f "$staged" "$target_file"
+    changed=yes
+  fi
+
+  # On every run verify actual HTTP response headers after a fresh request.
+  # No green "security applied" state is allowed on absent/ignored headers.
+  nonce="zeus-security-$(date +%s)"
+  header_result=$(curl -fsS --connect-timeout 7 --max-time 20 \
+      -H 'Cache-Control: no-cache' -D - -o /dev/null \
+      "https://$DOMAIN/robots.txt?$nonce") || header_result=''
+  lower_headers=$(printf '%s' "$header_result" | tr '[:upper:]' '[:lower:]')
+  if printf '%s\n' "$lower_headers" | grep -q '^x-content-type-options: nosniff' && \
+     printf '%s\n' "$lower_headers" | grep -q '^x-frame-options: deny' && \
+     printf '%s\n' "$lower_headers" | grep -q '^content-security-policy: '; then
+    SECURITY_APPLIED=yes
+    echo 'SECURITY LIVE PASS: X-Content-Type-Options, X-Frame-Options, CSP confirmed'
+    return 0
+  fi
+
+  if [ "$changed" = yes ]; then
+    cp -p "$backup" "$target_file"
+    echo 'WARNING: security block rolled back because live HTTP headers did not pass' >&2
+  else
+    echo 'WARNING: existing security block did not pass HTTP verification' >&2
+  fi
+  return 0
+}
+install_security_rules
+
 # Статус физической выкладки REG.RU — записывать ПОСЛЕ копирования sitemap.
 # Публичный маркер не содержит учётных данных и позволяет отличать завершённый
 # cron от зелёного теста GitHub, который лишь увидел старую версию.

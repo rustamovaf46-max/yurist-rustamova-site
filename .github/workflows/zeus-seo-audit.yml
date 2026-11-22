@@ -14,6 +14,8 @@ on:
       - 'scripts/seo_audit.py'
       - 'scripts/reg-ru-deploy.sh'
       - '.htaccess'
+      - 'tests/test_site_security.py'
+      - 'tests/test_contact_integrity.py'
       - '.github/workflows/zeus-seo-audit.yml'
 permissions:
   contents: read
@@ -32,5 +34,9 @@ jobs:
           grep -q 'BEGIN ZEUS CANONICAL' .htaccess
           grep -q 'END ZEUS CANONICAL' .htaccess
           grep -q 'R=301' .htaccess
+      - name: Test server security and privacy safeguards
+        run: python3 -m unittest discover -s tests -p 'test_site_security.py' -v
+      - name: Ensure no phone / MAX substitution on all public pages
+        run: python3 -m unittest discover -s tests -p 'test_contact_integrity.py' -v
       - name: Audit all published pages and sitemap
         run: python3 scripts/seo_audit.py

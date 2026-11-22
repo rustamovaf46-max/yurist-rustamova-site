@@ -9,3 +9,27 @@ RewriteCond %{HTTP:X-Forwarded-Proto} !^https$ [NC]
 RewriteRule ^ https://xn--80aafwvmkbibjcl2m.xn--p1ai%{REQUEST_URI} [R=301,L,NE]
 </IfModule>
 # END ZEUS CANONICAL
+
+# BEGIN ZEUS SECURITY
+# Security headers protect visitors against framing/clickjacking, referrer leaks
+# and some classes of injected content; no impact on legitimate search robots.
+# Full script-src CSP is intentionally not imposed until legacy inline scripts
+# and consent-based Yandex Metrika have been migrated/tested.
+<IfModule mod_headers.c>
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "DENY"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+Header always set Content-Security-Policy "frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests"
+Header always set Strict-Transport-Security "max-age=15552000"
+</IfModule>
+
+# Sensitive source files and backup archives must never be served publicly.
+# Do not block /.well-known/ (TLS renewal), the IndexNow .txt key or robots.
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule (^|/)\.(git|svn|hg)(/|$) - [F,NC,L]
+RewriteRule (^|/)\.env([./]|$) - [F,NC,L]
+RewriteRule \.(sql|sqlite|db|bak|old|swp|swo|log|ini|conf|pem|key|p12|pfx|zip|tar|tgz)$ - [F,NC,L]
+</IfModule>
+# END ZEUS SECURITY

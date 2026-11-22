@@ -56,6 +56,32 @@ jobs:
                   errors.append("Production photo missing or does not match source: " + photo)
               print("PHOTO", photo, "HTTP", code, "exact-sha256=", remote == original)
 
+          # Secure delivery is verified on the actual REG.RU response, not merely
+          # by the presence of an Apache config file in GitHub.
+          from urllib.error import HTTPError
+          try:
+              with urllib.request.urlopen(urllib.request.Request(
+                  base + "/robots.txt?security-probe=1", headers=ua), timeout=25) as response:
+                  security_headers = {name.lower(): value.lower() for name, value in response.headers.items()}
+              required = {
+                  "x-content-type-options": "nosniff",
+                  "x-frame-options": "deny",
+                  "referrer-policy": "strict-origin-when-cross-origin",
+              }
+              for name, value in required.items():
+                  if security_headers.get(name) != value:
+                      errors.append("Live security header missing/wrong: " + name)
+              csp = security_headers.get("content-security-policy", "")
+              if "frame-ancestors 'none'" not in csp or "object-src 'none'" not in csp:
+                  errors.append("Live CSP missing anti-framing and object-src controls")
+              if "max-age=" not in security_headers.get("strict-transport-security", ""):
+                  errors.append("Live HSTS header missing")
+              print("SECURITY LIVE", "headers verified" if not [
+                  e for e in errors if "security" in e.lower() or "CSP" in e
+              ] else "security headers not fully verified")
+          except Exception as exc:
+              errors.append("Live security-header request failed: " + type(exc).__name__)
+
           # Do not follow redirects here: report the real response status and Location.
           for host in (domain, "www." + domain):
               for path in ("/", "/privacy-policy.html"):
