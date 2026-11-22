@@ -174,7 +174,13 @@ def main():
         for name in sorted(published - {"index.html", "privacy-policy.html",
                                         "sudebnaya-praktika-i-obraztsy.html",
                                         "zemelnye-spory-yurist-moskva.html", "semeynye-spory-yurist-moskva.html",
-                                        "nasledstvennye-spory-yurist-moskva.html"}):
+                                        "nasledstvennye-spory-yurist-moskva.html",
+                                        "zhilishchnye-spory-yurist-moskva.html",
+                                        "arbitrazhnye-spory-yurist-moskva.html",
+                                        "pensionnye-spory-sfr-sud-moskva.html",
+                                        "voennye-spory-vyplaty-semyam-moskva.html",
+                                        "sudebnyy-yurist-goroda-moskovskoy-oblasti.html",
+                                        "sudebnyy-yurist-moskva-stantsii-metro.html"}):
             if name not in listed:
                 warnings.append(name + ": no direct link from articles library")
     report = [
