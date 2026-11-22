@@ -1,0 +1,30 @@
+name: Public page security regression
+on:
+  pull_request:
+    paths:
+      - '**.html'
+      - 'sitemap.xml'
+      - 'analytics-consent.js'
+      - 'tests/test_public_page_attack_surface.py'
+      - '.github/workflows/public-page-security.yml'
+  push:
+    branches: [main]
+    paths:
+      - '**.html'
+      - 'sitemap.xml'
+      - 'analytics-consent.js'
+      - 'tests/test_public_page_attack_surface.py'
+      - '.github/workflows/public-page-security.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check all public pages and consent guard
+        run: python -m unittest discover -s tests -p test_public_page_attack_surface.py -v

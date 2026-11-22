@@ -21,6 +21,12 @@ class PublicSurface(HTMLParser):
     def handle_starttag(self, tag, attrs):
         tag = tag.lower()
         attr = {key.lower(): (value or "") for key, value in attrs}
+        if tag in {"a", "area"} and attr.get("href", "").strip().lower().startswith(("javascript:", "data:", "vbscript:")):
+            self.alerts.append("unsafe link protocol")
+        if tag in {"a", "area"} and attr.get("target", "").lower() == "_blank":
+            rel = set(attr.get("rel", "").lower().split())
+            if "noopener" not in rel and "noreferrer" not in rel:
+                self.alerts.append("external tab without noopener/noreferrer")
         if tag == "script" and attr.get("src"):
             # Yandex Metrika is injected by the existing consent-gated
             # loader only. No new synchronous external scripts are allowed.
