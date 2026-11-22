@@ -77,6 +77,25 @@ class PublicPageAttackSurfaceTests(unittest.TestCase):
             if urlparse(href).hostname == "max.ru":
                 self.assertEqual(href, max_link, "Unexpected MAX contact destination")
 
+    def test_all_public_pages_reject_unapproved_contact_destinations(self):
+        phone = "tel:+79099282398"
+        max_link = "https://max.ru/u/f9LHodD0cOJXOThelfL4zEZsDHL2apF2b_WxxjVt948nXhHX6XZt-opsspM"
+        sitemap = ElementTree.parse(ROOT / "sitemap.xml").getroot()
+        for item in sitemap:
+            node = item.find("{*}loc")
+            if node is None or not node.text:
+                continue
+            path = unquote(urlparse(node.text.strip()).path.lstrip("/") or "index.html")
+            checker = PublicSurface()
+            checker.feed((ROOT / path).read_text(encoding="utf-8"))
+            for href in checker.links:
+                with self.subTest(page=path, href=href):
+                    scheme = urlparse(href).scheme.lower()
+                    if scheme in {"tel", "sms", "mailto"}:
+                        self.assertEqual(href, phone, "Unapproved direct contact destination")
+                    if urlparse(href).hostname == "max.ru":
+                        self.assertEqual(href, max_link, "Unapproved MAX destination")
+
     def test_consent_guard_is_the_only_yandex_loader(self):
         script = (ROOT / "analytics-consent.js").read_text(encoding="utf-8")
         self.assertIn("if (started || choice !== 'accepted') return;", script)
