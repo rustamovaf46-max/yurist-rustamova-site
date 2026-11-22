@@ -1,0 +1,59 @@
+name: ЗЕВС — SEO консилиум Gemini и Alice AI (без расходов по умолчанию)
+
+on:
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: "dry-run (бесплатно) или реальная независимая модель"
+        type: choice
+        options:
+          - dry-run
+          - gemini
+          - alice
+          - both
+        default: dry-run
+        required: true
+      approved:
+        description: "Разрешены потенциально платные API-запросы? По умолчанию нет."
+        type: choice
+        options:
+          - "no"
+          - "yes"
+        default: "no"
+        required: true
+  push:
+    branches: [main]
+    paths:
+      - scripts/zeus-independent-ai-seo.py
+      - .github/workflows/zeus-independent-ai-seo.yml
+
+permissions:
+  contents: read
+
+jobs:
+  independent-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Проверить код без запросов и счетов
+        run: |
+          python3 -m py_compile scripts/zeus-independent-ai-seo.py
+          python3 scripts/zeus-independent-ai-seo.py --provider dry-run --approved no
+      - name: Вызвать внешние модели только при отдельном подтверждении
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.approved == 'yes' && inputs.provider != 'dry-run' }}
+        env:
+          GEMINI_API_KEY: ${{ secrets.ZEUS_GEMINI_API_KEY }}
+          YANDEX_AI_API_KEY: ${{ secrets.ZEUS_YANDEX_AI_API_KEY }}
+          YANDEX_AI_FOLDER_ID: ${{ secrets.ZEUS_YANDEX_AI_FOLDER_ID }}
+          ZEUS_PROVIDER: ${{ inputs.provider }}
+        run: |
+          python3 scripts/zeus-independent-ai-seo.py --provider "$ZEUS_PROVIDER" --approved yes
+      - name: Сохранить только публичные SEO-отчёты
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.approved == 'yes' && inputs.provider != 'dry-run' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: zeus-independent-seo-review
+          path: zeus-ai-reports/*.md
+          if-no-files-found: ignore
+          retention-days: 7
