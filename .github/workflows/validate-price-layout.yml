@@ -40,7 +40,10 @@ jobs:
           catalog_url = base + "sudebnaya-praktika-i-obraztsy.html"
           service_url = base + "predstavitelstvo-v-sude-moskva.html"
           land_service_url = base + "zemelnye-spory-yurist-moskva.html"
-          expected_library = expected_articles - {catalog_url, service_url, land_service_url, base + "kontakty.html", base + "semeynye-spory-yurist-moskva.html", base + "nasledstvennye-spory-yurist-moskva.html",
+          # The Russian library contains Russian root articles only. Language-prefixed
+          # translations are valid sitemap URLs, but must not become duplicate cards here.
+          root_html = {url for url in expected_articles if urlparse(url).path.count("/") == 1}
+          expected_library = root_html - {catalog_url, service_url, land_service_url, base + "kontakty.html", base + "semeynye-spory-yurist-moskva.html", base + "nasledstvennye-spory-yurist-moskva.html",
                                             base + "zhilishchnye-spory-yurist-moskva.html",
                                             base + "arbitrazhnye-spory-yurist-moskva.html",
                                             base + "pensionnye-spory-sfr-sud-moskva.html",
@@ -155,7 +158,9 @@ jobs:
           from urllib.parse import urlparse
           from playwright.sync_api import sync_playwright
           max_url = "https://max.ru/u/f9LHodD0cOJXOThelfL4zEZsDHL2apF2b_WxxjVt948nXhHX6XZt-opsspM"
-          files = [pathlib.Path(urlparse(el.text.strip()).path).name
+          # Preserve language subdirectories: basename-only checks silently opened the
+          # Russian root file instead of /en/, /zh/ and /ar/ pages.
+          files = [urlparse(el.text.strip()).path.lstrip("/")
                    for el in ET.parse("sitemap.xml").iter()
                    if el.tag.endswith("loc") and el.text and
                    urlparse(el.text.strip()).path.endswith(".html") and
