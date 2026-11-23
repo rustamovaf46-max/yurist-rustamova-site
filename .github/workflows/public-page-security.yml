@@ -6,6 +6,8 @@ on:
       - 'sitemap.xml'
       - 'analytics-consent.js'
       - 'tests/test_public_page_attack_surface.py'
+      - 'tests/test_reg_ru_deploy_contract.py'
+      - 'scripts/reg-ru-deploy.sh'
       - '.github/workflows/public-page-security.yml'
   push:
     branches: [main]
@@ -14,6 +16,8 @@ on:
       - 'sitemap.xml'
       - 'analytics-consent.js'
       - 'tests/test_public_page_attack_surface.py'
+      - 'tests/test_reg_ru_deploy_contract.py'
+      - 'scripts/reg-ru-deploy.sh'
       - '.github/workflows/public-page-security.yml'
   workflow_dispatch:
 permissions:
@@ -26,5 +30,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Check all public pages and consent guard
-        run: python -m unittest discover -s tests -p test_public_page_attack_surface.py -v
+      - name: Check public pages and REG.RU deployment contract
+        run: |
+          sh -n scripts/reg-ru-deploy.sh
+          python -m unittest discover -s tests -p 'test_*.py' -v
