@@ -64,6 +64,26 @@ if [ -n "$(find "$SRC_DIR/assets" -type l -print -quit)" ]; then
   echo 'ОШИБКА: символические ссылки в assets.' >&2
   exit 1
 fi
+# Preflight: never advertise translated URLs if their HTML is absent in the ZIP.
+# This check is intentionally shell-only for REG.RU environments without Python.
+for language in en zh ar; do
+  if [ ! -d "$SRC_DIR/$language" ] || [ -L "$SRC_DIR/$language" ]; then
+    echo "ОШИБКА: нет безопасного языкового каталога $language в архиве." >&2
+    exit 1
+  fi
+  family_file="$SRC_DIR/$language/semeynye-spory-yurist-moskva.html"
+  if [ ! -s "$family_file" ] || [ -L "$family_file" ]; then
+    echo "ОШИБКА: отсутствует обязательная страница $language/semeynye-spory-yurist-moskva.html" >&2
+    exit 1
+  fi
+  if ! grep -q "/$language/semeynye-spory-yurist-moskva.html</loc>" "$SRC_DIR/sitemap.xml"; then
+    echo "ОШИБКА: перевод семейных споров отсутствует в sitemap ($language)." >&2
+    exit 1
+  fi
+done
+# Record the source manifest for diagnosis of stale server snapshots.
+SOURCE_SITEMAP_COUNT=$(grep -c '<loc>' "$SRC_DIR/sitemap.xml" || true)
+SOURCE_MULTILINGUAL_COUNT=$(find "$SRC_DIR/en" "$SRC_DIR/zh" "$SRC_DIR/ar" -maxdepth 1 -type f -name '*.html' | wc -l | tr -d ' ')
 COUNT=0
 publish_file() {
   source_file=$1
@@ -261,10 +281,12 @@ HEALTH_TMP=$(mktemp "$SITE_DIR/.zeus-health.XXXXXXXX")
   echo "homepage_checksum=$HOME_SUM"
   echo "privacy_policy_checksum=$PRIVACY_SUM"
   echo "updated_files=$COUNT"
+  echo "source_sitemap_url_count=$SOURCE_SITEMAP_COUNT"
+  echo "source_multilingual_html_count=$SOURCE_MULTILINGUAL_COUNT"
   echo "security_headers_verified=$SECURITY_APPLIED"
   echo "github_source=rustamovaf46-max/yurist-rustamova-site/main"
   echo "multilingual_html_count=$(find "$SITE_DIR/en" "$SITE_DIR/zh" "$SITE_DIR/ar" -maxdepth 1 -type f -name '*.html' 2>/dev/null | wc -l | tr -d ' ')"
-  echo "deploy_script_version=2026-11-23-multilingual-v2"
+  echo "deploy_script_version=2026-11-23-multilingual-v3"
 } > "$HEALTH_TMP"
 chmod 644 "$HEALTH_TMP"
 mv -f "$HEALTH_TMP" "$SITE_DIR/zeus-sync-status.txt"
