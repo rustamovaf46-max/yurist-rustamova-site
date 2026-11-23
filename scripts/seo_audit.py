@@ -74,21 +74,26 @@ class Scan(HTMLParser):
             self.title_text.append(data)
 
 def local_name(url):
-    """Normalize a relative/absolute same-host page URL to root HTML filename."""
+    """Normalize a same-host HTML URL to a safe site-relative filename."""
     p = urlparse(urljoin(SITE, url))
     if p.hostname != HOST or p.scheme not in ("http", "https"):
         return None
     path = unquote(p.path)
     if path in ("", "/"):
         return "index.html"
-    if path.count("/") != 1 or not path.endswith(".html"):
+    if not path.endswith(".html"):
         return None
-    return path.lstrip("/")
+    relative = Path(path.lstrip("/"))
+    if ".." in relative.parts or not relative.parts or relative.is_absolute():
+        return None
+    return relative.as_posix()
 
 def main():
     errors = []
     warnings = []
-    published = {p.name for p in ROOT.glob("*.html") if p.name not in EXCLUDED}
+    published = {p.relative_to(ROOT).as_posix() for p in ROOT.rglob("*.html")
+                 if p.name not in EXCLUDED and not any(part.startswith(".") for part in p.relative_to(ROOT).parts)
+                 and p.relative_to(ROOT).parts[0] not in {"tests", "_site", "node_modules", "seo-drafts"}}
     try:
         doc = ElementTree.parse(ROOT / "sitemap.xml")
         sitemap = []
@@ -181,6 +186,8 @@ def main():
                                         "voennye-spory-vyplaty-semyam-moskva.html",
                                         "sudebnyy-yurist-goroda-moskovskoy-oblasti.html",
                                         "sudebnyy-yurist-moskva-stantsii-metro.html"}):
+            if "/" in name:
+                continue  # Language variants belong in hreflang/navigation, not the Russian article catalog.
             if name not in listed:
                 warnings.append(name + ": no direct link from articles library")
     report = [

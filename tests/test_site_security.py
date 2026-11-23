@@ -82,12 +82,16 @@ class SiteSecurityTests(unittest.TestCase):
         self.assertIn("Sitemap: https://xn--80aafwvmkbibjcl2m.xn--p1ai/sitemap.xml", robot)
         root = ET.parse(ROOT / "sitemap.xml").getroot()
         entries = {}
+        count = 0
         for item in root:
             loc = item.find("{*}loc")
             mod = item.find("{*}lastmod")
             if loc is not None:
+                count += 1
+                self.assertNotIn(loc.text, entries, 'Duplicate sitemap URL')
                 entries[loc.text] = mod.text if mod is not None else None
-        self.assertEqual(len(entries), 52)
+        self.assertEqual(len(entries), count)
+        self.assertGreaterEqual(len(entries), 52, 'Sitemap unexpectedly lost existing URLs')
         self.assertEqual(entries["https://xn--80aafwvmkbibjcl2m.xn--p1ai/"], "2026-11-23")
         self.assertEqual(entries["https://xn--80aafwvmkbibjcl2m.xn--p1ai/privacy-policy.html"], "2026-11-23")
 

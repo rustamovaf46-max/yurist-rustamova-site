@@ -62,7 +62,8 @@ class PublicPageAttackSurfaceTests(unittest.TestCase):
                 checker = PublicSurface()
                 checker.feed(local.read_text(encoding="utf-8"))
                 self.assertEqual(checker.alerts, [], "Unexpected browser injection or interception path")
-        self.assertEqual(len(paths), 52)
+        self.assertEqual(len(paths), len(set(paths)), 'Duplicate sitemap page')
+        self.assertGreaterEqual(len(paths), 52, 'Sitemap lost public pages')
 
     def test_home_contact_channels_remain_approved(self):
         home = PublicSurface()
