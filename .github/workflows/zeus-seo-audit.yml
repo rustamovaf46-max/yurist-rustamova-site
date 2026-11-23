@@ -9,6 +9,9 @@ on:
     branches: [main]
     paths:
       - '*.html'
+      - 'en/*.html'
+      - 'zh/*.html'
+      - 'ar/*.html'
       - 'sitemap.xml'
       - 'robots.txt'
       - 'scripts/seo_audit.py'
@@ -17,6 +20,7 @@ on:
       - 'tests/test_site_security.py'
       - 'tests/test_contact_integrity.py'
       - 'tests/test_public_page_attack_surface.py'
+      - 'tests/test_multilingual_sitemap.py'
       - '.github/workflows/zeus-seo-audit.yml'
 permissions:
   contents: read
