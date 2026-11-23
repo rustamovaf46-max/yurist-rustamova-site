@@ -76,7 +76,7 @@ class NavigationRegressionTests(unittest.TestCase):
                 self.assertEqual(url.scheme, "https")
                 self.assertEqual(url.hostname, "xn--80aafwvmkbibjcl2m.xn--p1ai")
                 pages.append(unquote(url.path).lstrip("/") or "index.html")
-        self.assertEqual(len(pages), 51)
+        self.assertEqual(len(pages), 52)
         self.assertEqual(len(set(pages)), len(pages), "Duplicate URLs in sitemap")
         for page in pages:
             parsed = parse_page(ROOT / page)

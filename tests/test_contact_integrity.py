@@ -38,7 +38,7 @@ class ContactIntegrityTests(unittest.TestCase):
                 self.assertEqual(parsed.hostname, DOMAIN)
                 path = parsed.path.lstrip("/") or "index.html"
                 pages.append(path)
-        self.assertEqual(len(pages), 51)
+        self.assertEqual(len(pages), 52)
         for path in pages:
             with self.subTest(page=path):
                 page = (ROOT / path).read_text("utf-8")

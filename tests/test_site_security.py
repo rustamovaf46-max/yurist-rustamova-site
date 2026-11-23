@@ -87,7 +87,7 @@ class SiteSecurityTests(unittest.TestCase):
             mod = item.find("{*}lastmod")
             if loc is not None:
                 entries[loc.text] = mod.text if mod is not None else None
-        self.assertEqual(len(entries), 51)
+        self.assertEqual(len(entries), 52)
         self.assertEqual(entries["https://xn--80aafwvmkbibjcl2m.xn--p1ai/"], "2026-11-23")
         self.assertEqual(entries["https://xn--80aafwvmkbibjcl2m.xn--p1ai/privacy-policy.html"], "2026-11-23")
 
