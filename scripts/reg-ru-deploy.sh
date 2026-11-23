@@ -101,6 +101,16 @@ for f in "$SRC_DIR"/*.html; do
   esac
   publish_file "$f"
 done
+# Multilingual legal articles live in allowlisted first-level language folders.
+# Do not publish arbitrary nested repository content.
+for language in en zh ar; do
+  [ -d "$SRC_DIR/$language" ] || continue
+  [ ! -L "$SRC_DIR/$language" ] || { echo "ОШИБКА: язык — символическая ссылка" >&2; exit 1; }
+  for f in "$SRC_DIR/$language"/*.html; do
+    [ -f "$f" ] || continue
+    publish_file "$f"
+  done
+done
 for f in "$SRC_DIR/robots.txt" "$SRC_DIR/sitemap.xml"; do
   [ -f "$f" ] || continue
   publish_file "$f"
