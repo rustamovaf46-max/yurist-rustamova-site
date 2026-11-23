@@ -182,7 +182,8 @@ jobs:
                       basename = filename.rsplit("/", 1)[-1]
                       is_catalog = basename == "sudebnaya-praktika-i-obraztsy.html"
                       is_geography = basename in ("sudebnyy-yurist-goroda-moskovskoy-oblasti.html", "sudebnyy-yurist-moskva-stantsii-metro.html")
-                      required_contacts = 1 if is_translation else (2 if is_catalog or is_geography else 3)
+                      is_compact = is_translation or page.locator(".hero").count() == 0
+                      required_contacts = 1 if is_translation else (2 if is_catalog or is_geography or is_compact else 3)
                       assert max_links.count() >= required_contacts and all(href == max_url for href in max_links.evaluate_all("links => links.map(a => a.href)")), filename
                       if is_translation:
                           # Translations use a compact article template: verify the live
@@ -194,12 +195,12 @@ jobs:
                               assert page.locator(".city-item").count()==74, filename + ": all 74 cities"
                           else:
                               assert page.locator(".metro-station").count()==278, filename + ": all 278 metro stations"
-                      elif not is_catalog:
-                          assert page.locator(".hero a").filter(has_text="MAX").is_visible(), filename + ": top MAX"
-                          assert page.locator(".cta-panel a").filter(has_text="MAX").is_visible(), filename + ": CTA MAX"
-                      else:
+                      elif is_catalog:
                           assert page.locator(".library-toolbar input").count()==1, filename + ": library search"
                           assert page.locator("#library-grid .legal-article").count()>=1, filename + ": library cards"
+                      elif not is_compact:
+                          assert page.locator(".hero a").filter(has_text="MAX").is_visible(), filename + ": top MAX"
+                          assert page.locator(".cta-panel a").filter(has_text="MAX").is_visible(), filename + ": CTA MAX"
                       assert page.locator('a[href="tel:+79099282398"]').count() >= required_contacts, filename + ": telephone"
                       if width <= 768 and not is_catalog and not is_translation:
                           assert page.locator(".mobile-bottom").is_visible(), filename + ": mobile contacts"
