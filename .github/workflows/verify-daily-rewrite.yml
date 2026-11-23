@@ -19,6 +19,8 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - name: "Проверить редактуру старой статьи по московской дате"
         shell: bash
         run: |
