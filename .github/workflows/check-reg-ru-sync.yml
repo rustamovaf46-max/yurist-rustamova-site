@@ -62,8 +62,20 @@ jobs:
               if "/en/" in url or "/zh/" in url or "/ar/" in url:
                   path = url.split(base,1)[1]
                   html = get(path).decode("utf-8")
-                  if 'rel="canonical"' not in html or 'hreflang=' not in html:
-                      print("::error::Missing multilingual SEO markup: "+path)
+                  lang = path.split("/")[1]
+                  canonical = '<link rel="canonical" href="' + url + '">'
+                  if canonical not in html:
+                      print("::error::Incorrect live canonical: "+path)
                       sys.exit(1)
+                  if '<html lang="' + lang + '"' not in html:
+                      print("::error::Incorrect live language: "+path)
+                      sys.exit(1)
+                  if lang == "ar" and 'dir="rtl"' not in html.split(">",1)[0]:
+                      print("::error::Arabic page missing RTL: "+path)
+                      sys.exit(1)
+                  for code in ("ru","en","zh","ar"):
+                      if 'hreflang="' + code + '"' not in html:
+                          print("::error::Missing live hreflang "+code+": "+path)
+                          sys.exit(1)
           print("PASS: REG.RU sitemap and multilingual pages are live.")
           PY
