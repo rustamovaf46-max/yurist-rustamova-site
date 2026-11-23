@@ -40,6 +40,39 @@ class MultilingualSitemapTest(unittest.TestCase):
         self.assertEqual(declared, actual,
                          f"Multilingual sitemap/file mismatch: missing={sorted(actual-declared)} extra={sorted(declared-actual)}")
 
+    def test_no_nested_or_unmatched_paragraphs_in_language_body(self):
+        """Guard against malformed generated translations such as <p>...<p>."""
+        from html.parser import HTMLParser
+
+        class ParagraphValidator(HTMLParser):
+            def __init__(self):
+                super().__init__()
+                self.open_p = False
+                self.problems = []
+
+            def handle_starttag(self, tag, attrs):
+                if tag == "p":
+                    if self.open_p:
+                        self.problems.append("nested <p>")
+                    self.open_p = True
+                elif tag in {"section", "article", "div", "h1", "h2", "h3", "ul", "ol"} and self.open_p:
+                    self.problems.append(f"unclosed <p> before <{tag}>")
+
+            def handle_endtag(self, tag):
+                if tag == "p":
+                    if not self.open_p:
+                        self.problems.append("unmatched </p>")
+                    self.open_p = False
+                elif tag in {"section", "article", "div", "main"} and self.open_p:
+                    self.problems.append(f"unclosed <p> before </{tag}>")
+
+        for lang in sorted(LANGUAGES):
+            for page in (ROOT / lang).glob("*.html"):
+                with self.subTest(page=str(page.relative_to(ROOT))):
+                    parser = ParagraphValidator()
+                    parser.feed(page.read_text(encoding="utf-8"))
+                    self.assertFalse(parser.problems, f"{page}: {parser.problems[:8]}")
+
     def test_family_law_three_translations_in_deploy_archive(self):
         name = "semeynye-spory-yurist-moskva.html"
         for lang in sorted(LANGUAGES):
