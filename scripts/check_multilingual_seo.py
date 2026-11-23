@@ -73,6 +73,36 @@ def main():
             if (code, p.alternates.get(code)) not in xml_alts:
                 errors.append(f"sitemap hreflang mismatch: {rel}, {code}")
         translated.append(rel)
+    # Validate reciprocal alternates and the Russian source for each translated group.
+    groups = {}
+    for rel in translated:
+        _, slug = rel.split("/", 1)
+        groups.setdefault(slug, set()).add(rel.split("/", 1)[0])
+    for slug, found in groups.items():
+        ru_url = f"{BASE}/{slug}"
+        if ru_url not in urls:
+            errors.append(f"Russian original missing from sitemap: {slug}")
+            continue
+        ru_file = ROOT / slug
+        if not ru_file.is_file():
+            errors.append(f"Russian original missing on disk: {slug}")
+            continue
+        expected = {"ru": ru_url, **{lang: f"{BASE}/{lang}/{slug}" for lang in found}}
+        for lang, target in expected.items():
+            if target not in urls:
+                errors.append(f"language URL missing from sitemap: {target}")
+                continue
+            file = ROOT / (slug if lang == "ru" else f"{lang}/{slug}")
+            page = Page()
+            page.feed(file.read_text(encoding="utf-8"))
+            if page.canonical != [target]:
+                errors.append(f"wrong canonical: {file}")
+            for code, dest in expected.items():
+                if page.alternates.get(code) != dest:
+                    errors.append(f"nonreciprocal HTML hreflang: {file} {code}")
+                xml_alts = {(a.get("hreflang"), a.get("href")) for a in urls[target].findall("x:link", ns)}
+                if (code, dest) not in xml_alts:
+                    errors.append(f"nonreciprocal sitemap hreflang: {target} {code}")
     print(f"SITEMAP URLs: {len(urls)}; translated pages: {len(translated)}")
     ru_pages = [p for p in ROOT.glob("*.html") if p.name not in
                 {"privacy-policy.html", "kontakty.html", "analytics-consent.html"}]
