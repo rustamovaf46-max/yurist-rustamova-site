@@ -1,0 +1,62 @@
+name: "SEO — ежедневная переработка старой статьи"
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "25 14 * * *" # 17:25 МСК; проверка после переработки и деплоя
+  push:
+    branches: [main]
+    paths:
+      - "*.html"
+      - "sitemap.xml"
+      - ".github/workflows/verify-daily-rewrite.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify-rewrite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: "Проверить редактуру старой статьи по московской дате"
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from datetime import datetime
+          from pathlib import Path
+          from zoneinfo import ZoneInfo
+          import re
+          import xml.etree.ElementTree as ET
+
+          today = datetime.now(ZoneInfo("Europe/Moscow")).date().isoformat()
+          root = ET.parse("sitemap.xml").getroot()
+          candidates = []
+          for loc in root.iter():
+              if not loc.tag.endswith("loc") or not loc.text:
+                  continue
+              path = loc.text.strip().split("?")[0].rsplit("/", 1)[-1]
+              if not path.endswith(".html") or path in {
+                  "privacy-policy.html", "kontakty.html",
+                  "sudebnaya-praktika-i-obraztsy.html",
+              }:
+                  continue
+              file = Path(path)
+              if not file.is_file():
+                  raise SystemExit(f"::error::В sitemap отсутствует файл: {path}")
+              html = file.read_text(encoding="utf-8")
+              published = re.search(r'"datePublished"\s*:\s*"(\d{4}-\d{2}-\d{2})"', html)
+              modified = re.search(r'"dateModified"\s*:\s*"(\d{4}-\d{2}-\d{2})"', html)
+              if published and modified and published.group(1) < today and modified.group(1) == today:
+                  candidates.append(path)
+          if not candidates:
+              raise SystemExit(
+                  f"::error::Не найдена ни одна старая статья с dateModified={today}. "
+                  "Нужна реальная переработка; изменение даты без изменения текста недопустимо."
+              )
+          print(f"REWRITE FOUND {today}: {len(candidates)}")
+          for path in candidates:
+              print("REWRITTEN:", path)
+          print("NOTICE: дата dateModified — только предварительный сигнал. "
+                "Качество переработки и точную выкладку REG.RU проверять отдельно.")
+          PY
