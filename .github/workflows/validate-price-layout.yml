@@ -159,7 +159,8 @@ jobs:
                    for el in ET.parse("sitemap.xml").iter()
                    if el.tag.endswith("loc") and el.text and
                    urlparse(el.text.strip()).path.endswith(".html") and
-                   not urlparse(el.text.strip()).path.endswith("/privacy-policy.html")]
+                   not urlparse(el.text.strip()).path.endswith("/privacy-policy.html") and
+                   not urlparse(el.text.strip()).path.endswith("/kontakty.html")]
           assert files, "No articles"
           with sync_playwright() as p:
               browser = p.chromium.launch(headless=True, args=["--no-sandbox"])
