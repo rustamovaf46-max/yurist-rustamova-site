@@ -200,7 +200,7 @@ jobs:
           catalog_url = BASE + "/sudebnaya-praktika-i-obraztsy.html"
           service_url = BASE + "/predstavitelstvo-v-sude-moskva.html"
           land_service_url = BASE + "/zemelnye-spory-yurist-moskva.html"
-          library_pages = expected_articles - {catalog_url, service_url, land_service_url, BASE + "/semeynye-spory-yurist-moskva.html", BASE + "/nasledstvennye-spory-yurist-moskva.html",
+          library_pages = expected_articles - {catalog_url, service_url, land_service_url, BASE + "/kontakty.html", BASE + "/semeynye-spory-yurist-moskva.html", BASE + "/nasledstvennye-spory-yurist-moskva.html",
                                  BASE + "/zhilishchnye-spory-yurist-moskva.html",
                                  BASE + "/arbitrazhnye-spory-yurist-moskva.html",
                                  BASE + "/pensionnye-spory-sfr-sud-moskva.html",
