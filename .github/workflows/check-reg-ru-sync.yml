@@ -1,0 +1,69 @@
+name: Verify REG.RU deployment freshness
+on:
+  schedule:
+    - cron: '17 */3 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/reg-ru-deploy.sh'
+      - 'sitemap.xml'
+      - '.github/workflows/check-reg-ru-sync.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare live sitemap and deployment status
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os, re, sys, time, urllib.request, xml.etree.ElementTree as ET
+          from pathlib import Path
+          base = "https://xn--80aafwvmkbibjcl2m.xn--p1ai"
+          def get(path):
+              req = urllib.request.Request(base + path, headers={"User-Agent": "ZeusDeploymentVerifier/1.0"})
+              with urllib.request.urlopen(req, timeout=25) as res:
+                  if res.status != 200:
+                      raise RuntimeError(f"{path}: HTTP {res.status}")
+                  return res.read()
+          expected = Path("sitemap.xml").read_bytes()
+          local = ET.fromstring(expected)
+          ns = {"s":"http://www.sitemaps.org/schemas/sitemap/0.9"}
+          local_urls = [e.text for e in local.findall("s:url/s:loc",ns)]
+          status = get("/zeus-sync-status.txt").decode("utf-8")
+          info = dict(re.findall(r"^([a-z_]+)=(.+)$",status,re.M))
+          live = get("/sitemap.xml")
+          remote = ET.fromstring(live)
+          live_urls = [e.text for e in remote.findall("s:url/s:loc",ns)]
+          print("GitHub sitemap URLs:",len(local_urls))
+          print("Live sitemap URLs:",len(live_urls))
+          print("Deployment timestamp:",info.get("published_at_utc","missing"))
+          print("Live multilingual files:",info.get("multilingual_html_count","not yet reported"))
+          missing = sorted(set(local_urls)-set(live_urls))
+          extra = sorted(set(live_urls)-set(local_urls))
+          if missing: print("Missing from live sitemap:", *missing[:20], sep="\n")
+          if extra: print("Extra in live sitemap:", *extra[:20], sep="\n")
+          age = None
+          from datetime import datetime, timezone
+          try:
+              age = (datetime.now(timezone.utc)-datetime.fromisoformat(info["published_at_utc"].replace("Z","+00:00"))).total_seconds()/3600
+          except (KeyError,ValueError): pass
+          if age is not None: print("Last deployment age (hours):",round(age,2))
+          with open(os.environ["GITHUB_STEP_SUMMARY"],"a") as f:
+              f.write(f"REG.RU live sitemap: {len(live_urls)} URLs; GitHub: {len(local_urls)} URLs. Last sync: {info.get('published_at_utc','unknown')}.\n")
+          if missing or extra or age is None or age > 6:
+              print("::error::REG.RU deployment is stale or differs from GitHub; inspect hosting cron and deployment logs.")
+              sys.exit(1)
+          for url in local_urls:
+              if "/en/" in url or "/zh/" in url or "/ar/" in url:
+                  path = url.split(base,1)[1]
+                  html = get(path).decode("utf-8")
+                  if 'rel="canonical"' not in html or 'hreflang=' not in html:
+                      print("::error::Missing multilingual SEO markup: "+path)
+                      sys.exit(1)
+          print("PASS: REG.RU sitemap and multilingual pages are live.")
+          PY
