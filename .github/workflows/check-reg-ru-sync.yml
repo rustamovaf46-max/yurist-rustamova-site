@@ -70,7 +70,7 @@ jobs:
                   if '<html lang="' + lang + '"' not in html:
                       print("::error::Incorrect live language: "+path)
                       sys.exit(1)
-                  if lang == "ar" and 'dir="rtl"' not in html.split(">",1)[0]:
+                  if lang == "ar" and not re.search(r'<html[^>]*dir="rtl"', html):
                       print("::error::Arabic page missing RTL: "+path)
                       sys.exit(1)
                   for code in ("ru","en","zh","ar"):
