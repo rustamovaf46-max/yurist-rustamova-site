@@ -236,7 +236,7 @@ jobs:
               page_html, page_headers = fetch(url + "?run=" + run_id)
               if "text/html" not in page_headers.get("Content-Type", "").lower():
                   raise RuntimeError(f"Not HTML: {url}")
-              filename = Path(urlparse(url).path).name
+              filename = urlparse(url).path.lstrip('/')
               verify_version(filename, page_html.encode("utf-8"))
               page = Page()
               page.feed(page_html)
@@ -324,7 +324,9 @@ jobs:
                   raise SystemExit("::error::В sitemap обнаружен чужой или не-HTTPS URL: " + url)
               if not parsed.path.endswith(".html") or parsed.path.endswith("/privacy-policy.html"):
                   continue
-              filename = Path(parsed.path).name
+              filename = parsed.path.lstrip('/')
+              if filename.startswith(('en/', 'zh/', 'ar/')):
+                  continue  # Translations are not separate daily Russian editorial releases.
               local_file = Path(filename)
               if not local_file.is_file():
                   raise SystemExit("::error::Нет исходного HTML из sitemap в main: " + filename)
