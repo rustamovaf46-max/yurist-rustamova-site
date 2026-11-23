@@ -8,6 +8,8 @@ on:
       - 'tests/test_public_page_attack_surface.py'
       - 'tests/test_reg_ru_deploy_contract.py'
       - 'scripts/reg-ru-deploy.sh'
+      - '.htaccess'
+      - 'tests/test_htaccess_security_contract.py'
       - '.github/workflows/public-page-security.yml'
   push:
     branches: [main]
@@ -18,6 +20,8 @@ on:
       - 'tests/test_public_page_attack_surface.py'
       - 'tests/test_reg_ru_deploy_contract.py'
       - 'scripts/reg-ru-deploy.sh'
+      - '.htaccess'
+      - 'tests/test_htaccess_security_contract.py'
       - '.github/workflows/public-page-security.yml'
   workflow_dispatch:
 permissions:
