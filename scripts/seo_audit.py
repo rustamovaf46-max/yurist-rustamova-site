@@ -93,7 +93,7 @@ def main():
     warnings = []
     published = {p.relative_to(ROOT).as_posix() for p in ROOT.rglob("*.html")
                  if p.name not in EXCLUDED and not any(part.startswith(".") for part in p.relative_to(ROOT).parts)
-                 and p.relative_to(ROOT).parts[0] not in {"tests", "_site", "node_modules"}}
+                 and p.relative_to(ROOT).parts[0] not in {"tests", "_site", "node_modules", "seo-drafts"}}
     try:
         doc = ElementTree.parse(ROOT / "sitemap.xml")
         sitemap = []
@@ -186,6 +186,8 @@ def main():
                                         "voennye-spory-vyplaty-semyam-moskva.html",
                                         "sudebnyy-yurist-goroda-moskovskoy-oblasti.html",
                                         "sudebnyy-yurist-moskva-stantsii-metro.html"}):
+            if "/" in name:
+                continue  # Language variants belong in hreflang/navigation, not the Russian article catalog.
             if name not in listed:
                 warnings.append(name + ": no direct link from articles library")
     report = [
