@@ -38,7 +38,8 @@ class ContactIntegrityTests(unittest.TestCase):
                 self.assertEqual(parsed.hostname, DOMAIN)
                 path = parsed.path.lstrip("/") or "index.html"
                 pages.append(path)
-        self.assertEqual(len(pages), 52)
+        self.assertEqual(len(pages), len(set(pages)), 'Duplicate sitemap paths')
+        self.assertGreaterEqual(len(pages), 52, 'Sitemap lost public pages')
         for path in pages:
             with self.subTest(page=path):
                 page = (ROOT / path).read_text("utf-8")
