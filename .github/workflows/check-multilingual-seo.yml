@@ -1,0 +1,21 @@
+name: Check multilingual SEO
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'en/**'
+      - 'zh/**'
+      - 'ar/**'
+      - 'sitemap.xml'
+      - 'scripts/check_multilingual_seo.py'
+      - '.github/workflows/check-multilingual-seo.yml'
+  workflow_dispatch:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate language URLs and hreflang
+        run: python3 scripts/check_multilingual_seo.py
