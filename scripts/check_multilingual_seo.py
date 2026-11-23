@@ -103,6 +103,11 @@ def main():
                 xml_alts = {(a.get("hreflang"), a.get("href")) for a in urls[target].findall("x:link", ns)}
                 if (code, dest) not in xml_alts:
                     errors.append(f"nonreciprocal sitemap hreflang: {target} {code}")
+    # Reject incomplete language groups: all public translated articles/services
+    # must have Russian, English, Chinese and Arabic versions.
+    for slug, found in groups.items():
+        if found != {"en", "zh", "ar"}:
+            errors.append(f"incomplete language group {slug}: {sorted(found)}")
     print(f"SITEMAP URLs: {len(urls)}; translated pages: {len(translated)}")
     ru_pages = [p for p in ROOT.glob("*.html") if p.name not in
                 {"privacy-policy.html", "kontakty.html", "analytics-consent.html"}]
