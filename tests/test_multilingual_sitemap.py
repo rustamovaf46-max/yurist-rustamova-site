@@ -73,6 +73,31 @@ class MultilingualSitemapTest(unittest.TestCase):
                     parser.feed(page.read_text(encoding="utf-8"))
                     self.assertFalse(parser.problems, f"{page}: {parser.problems[:8]}")
 
+    def test_reciprocal_hreflang_clusters(self):
+        from html.parser import HTMLParser
+
+        class Alternates(HTMLParser):
+            def __init__(self):
+                super().__init__()
+                self.links = []
+            def handle_starttag(self, tag, attrs):
+                a = dict(attrs)
+                if tag == "link" and "alternate" in a.get("rel", "").split() and a.get("hreflang"):
+                    self.links.append((a["hreflang"], a.get("href", "")))
+
+        base = "https://" + HOST + "/"
+        for page in sorted((ROOT / "en").glob("*.html")):
+            slug = page.name
+            expected = {"ru": base + slug, "x-default": base + slug}
+            expected.update({lang: base + lang + "/" + slug for lang in LANGUAGES})
+            for target in [ROOT / slug] + [ROOT / lang / slug for lang in sorted(LANGUAGES)]:
+                with self.subTest(page=str(target.relative_to(ROOT))):
+                    self.assertTrue(target.is_file())
+                    parser = Alternates()
+                    parser.feed(target.read_text(encoding="utf-8"))
+                    self.assertEqual(len(parser.links), len(expected), str(target))
+                    self.assertEqual(dict(parser.links), expected, str(target))
+
     def test_family_law_three_translations_in_deploy_archive(self):
         name = "semeynye-spory-yurist-moskva.html"
         for lang in sorted(LANGUAGES):
