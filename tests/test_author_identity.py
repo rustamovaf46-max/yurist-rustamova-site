@@ -92,7 +92,12 @@ class PublicAuthorIdentityTests(unittest.TestCase):
             with self.subTest(url=url):
                 parsed = urlparse(url)
                 self.assertEqual(parsed.netloc, urlparse(ORIGIN).netloc)
-                self.assertIn(url, published, "Public guide points to an unlisted page")
+                if parsed.path == "/sitemap.xml":
+                    # The sitemap is a public machine-readable resource, not a page
+                    # that should list itself inside the sitemap.
+                    self.assertTrue((ROOT / "sitemap.xml").is_file())
+                else:
+                    self.assertIn(url, published, "Public guide points to an unlisted page")
         self.assertNotRegex(guidance, r'(?i)api[_-]?key|bearer\s+[a-z0-9]|password=')
 
 
