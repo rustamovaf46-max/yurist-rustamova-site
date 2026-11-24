@@ -15,6 +15,9 @@ on:
       - .github/workflows/verify-articles-live.yml
       - yandex_f716343b29761cf2.html
       - '*.html'
+      - 'en/*.html'
+      - 'zh/*.html'
+      - 'ar/*.html'
       - sitemap.xml
       - robots.txt
       - 'assets/**'
@@ -200,7 +203,9 @@ jobs:
           catalog_url = BASE + "/sudebnaya-praktika-i-obraztsy.html"
           service_url = BASE + "/predstavitelstvo-v-sude-moskva.html"
           land_service_url = BASE + "/zemelnye-spory-yurist-moskva.html"
-          library_pages = expected_articles - {catalog_url, service_url, land_service_url, BASE + "/kontakty.html", BASE + "/semeynye-spory-yurist-moskva.html", BASE + "/nasledstvennye-spory-yurist-moskva.html",
+          # The Russian library indexes Russian editorial articles only. Translated
+          # pages remain covered by the full live HTML verification below.
+          library_pages = {u for u in expected_articles if "/" not in urlparse(u).path.lstrip("/")} - {catalog_url, service_url, land_service_url, BASE + "/o-yuriste-fatima-rustamova.html", BASE + "/kontakty.html", BASE + "/semeynye-spory-yurist-moskva.html", BASE + "/nasledstvennye-spory-yurist-moskva.html",
                                  BASE + "/zhilishchnye-spory-yurist-moskva.html",
                                  BASE + "/arbitrazhnye-spory-yurist-moskva.html",
                                  BASE + "/pensionnye-spory-sfr-sud-moskva.html",
@@ -248,7 +253,7 @@ jobs:
                   raise RuntimeError(f"Живая ссылка MAX отсутствует или ведёт не на профиль владельца: {url}")
               if not page.phone_links or any(href != PHONE for href in page.phone_links):
                   raise RuntimeError(f"Живая телефонная ссылка отсутствует или расходится: {url}")
-              print("PASS:", url, "HTTP 200, exact GitHub HTML, H1, indexable, live MAX/phone, catalog card, sitemap")
+              print("PASS:", url, "HTTP 200, exact GitHub HTML, H1, indexable, live MAX/phone, sitemap")
           print(f"VERIFIED: {len(library_pages)} legal articles, sitemap identical to GitHub, {len(catalog.cards)} catalog cards and dedicated court representation on REG.RU")
           print("This checks technical accessibility, not actual Yandex/Google indexing.")
           PY
