@@ -21,6 +21,8 @@ on:
       - 'tests/test_contact_integrity.py'
       - 'tests/test_public_page_attack_surface.py'
       - 'tests/test_multilingual_sitemap.py'
+      - 'tests/test_author_identity.py'
+      - 'llms.txt'
       - '.github/workflows/zeus-seo-audit.yml'
 permissions:
   contents: read
@@ -47,5 +49,7 @@ jobs:
         run: python3 -m unittest discover -s tests -p 'test_public_page_attack_surface.py' -v
       - name: Check multilingual sitemap and deployment-file parity
         run: python3 -m unittest discover -s tests -p 'test_multilingual_sitemap.py' -v
+      - name: Verify public professional author identity and AI guide
+        run: python3 -m unittest discover -s tests -p 'test_author_identity.py' -v
       - name: Audit all published pages and sitemap
         run: python3 scripts/seo_audit.py
