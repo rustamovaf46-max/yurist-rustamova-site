@@ -6,6 +6,9 @@ on:
     paths:
       - sitemap.xml
       - '*.html'
+      - 'en/*.html'
+      - 'zh/*.html'
+      - 'ar/*.html'
       - .github/workflows/indexnow.yml
       - tests/test_indexnow_workflow.py
   workflow_dispatch:
