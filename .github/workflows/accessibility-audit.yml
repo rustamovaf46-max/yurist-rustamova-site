@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths:
+      - '**/*.html'
       - 'scripts/a11y_axe_audit.py'
       - '.github/workflows/accessibility-audit.yml'
 
