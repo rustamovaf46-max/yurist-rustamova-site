@@ -120,6 +120,53 @@ class MultilingualSitemapTest(unittest.TestCase):
                     self.assertIn(alternate, entries)
                     self.assertEqual(dict(entries[alternate]), mapping)
 
+    def test_language_direction_and_basic_accessibility_of_translations(self):
+        """Check document language, Arabic RTL, content landmark and accessible images.
+
+        This is a source-level gate; WCAG 2.2 AA still needs browser/AT testing.
+        """
+        from html.parser import HTMLParser
+
+        class Structure(HTMLParser):
+            def __init__(self):
+                super().__init__()
+                self.html_attrs = {}
+                self.mains = 0
+                self.h1 = 0
+                self.issues = []
+
+            def handle_starttag(self, tag, attrs):
+                attrs = dict(attrs)
+                if tag == "html":
+                    self.html_attrs = attrs
+                elif tag == "main":
+                    self.mains += 1
+                elif tag == "h1":
+                    self.h1 += 1
+                elif tag == "img" and "alt" not in attrs:
+                    self.issues.append("image missing alt attribute")
+                elif tag == "a" and attrs.get("target") == "_blank":
+                    if "noopener" not in attrs.get("rel", "").split():
+                        self.issues.append("target blank without noopener")
+
+        for lang in sorted(LANGUAGES):
+            for page in sorted((ROOT / lang).glob("*.html")):
+                with self.subTest(page=str(page.relative_to(ROOT))):
+                    html = page.read_text(encoding="utf-8")
+                    parser = Structure()
+                    parser.feed(html)
+                    self.assertEqual(parser.html_attrs.get("lang"), lang)
+                    if lang == "ar":
+                        self.assertEqual(parser.html_attrs.get("dir"), "rtl",
+                                         "Arabic content must use right-to-left direction")
+                    else:
+                        self.assertNotEqual(parser.html_attrs.get("dir"), "rtl")
+                    self.assertEqual(parser.mains, 1, "One main landmark required")
+                    self.assertEqual(parser.h1, 1, "Exactly one primary heading required")
+                    self.assertFalse(parser.issues, f"{page}: {parser.issues}")
+                    self.assertIn('/privacy-policy.html', html,
+                                  "Link to original Russian privacy policy is required")
+
     def test_family_law_three_translations_in_deploy_archive(self):
         name = "semeynye-spory-yurist-moskva.html"
         for lang in sorted(LANGUAGES):
