@@ -98,6 +98,28 @@ class MultilingualSitemapTest(unittest.TestCase):
                     self.assertEqual(len(parser.links), len(expected), str(target))
                     self.assertEqual(dict(parser.links), expected, str(target))
 
+    def test_sitemap_alternates_include_reciprocal_x_default(self):
+        tree = ElementTree.parse(ROOT / "sitemap.xml")
+        entries = {}
+        for node in tree.findall(".//{*}url"):
+            loc = node.find("{*}loc")
+            links = [(link.get("hreflang"), link.get("href"))
+                     for link in node.findall("{http://www.w3.org/1999/xhtml}link")
+                     if link.get("rel") == "alternate"]
+            entries[(loc.text or "").strip()] = links
+        for url, links in entries.items():
+            if not links:
+                continue
+            with self.subTest(url=url):
+                mapping = dict(links)
+                self.assertEqual(len(links), 5)
+                self.assertEqual(set(mapping), {"ru", "en", "zh", "ar", "x-default"})
+                self.assertEqual(mapping["x-default"], mapping["ru"])
+                self.assertIn(url, mapping.values())
+                for alternate in mapping.values():
+                    self.assertIn(alternate, entries)
+                    self.assertEqual(dict(entries[alternate]), mapping)
+
     def test_family_law_three_translations_in_deploy_archive(self):
         name = "semeynye-spory-yurist-moskva.html"
         for lang in sorted(LANGUAGES):
