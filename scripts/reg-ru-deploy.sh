@@ -131,7 +131,7 @@ for language in en zh ar; do
     publish_file "$f"
   done
 done
-for f in "$SRC_DIR/robots.txt" "$SRC_DIR/sitemap.xml"; do
+for f in "$SRC_DIR/robots.txt" "$SRC_DIR/sitemap.xml" "$SRC_DIR/llms.txt"; do
   [ -f "$f" ] || continue
   publish_file "$f"
 done
@@ -286,7 +286,7 @@ HEALTH_TMP=$(mktemp "$SITE_DIR/.zeus-health.XXXXXXXX")
   echo "security_headers_verified=$SECURITY_APPLIED"
   echo "github_source=rustamovaf46-max/yurist-rustamova-site/main"
   echo "multilingual_html_count=$(find "$SITE_DIR/en" "$SITE_DIR/zh" "$SITE_DIR/ar" -maxdepth 1 -type f -name '*.html' 2>/dev/null | wc -l | tr -d ' ')"
-  echo "deploy_script_version=2026-11-23-multilingual-v3"
+  echo "deploy_script_version=2026-11-24-llms-v4"
 } > "$HEALTH_TMP"
 chmod 644 "$HEALTH_TMP"
 mv -f "$HEALTH_TMP" "$SITE_DIR/zeus-sync-status.txt"
