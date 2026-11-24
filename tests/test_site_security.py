@@ -58,7 +58,7 @@ class SiteSecurityTests(unittest.TestCase):
         policy = (ROOT / "privacy-policy.html").read_text("utf-8")
         for anchor in ('id="security"', 'id="copyright"', 'id="anti-fraud"', 'id="analytics"'):
             self.assertIn(anchor, policy)
-        self.assertIn("23.11.2026", policy)
+        self.assertIn("24.11.2026", policy)
         self.assertIn("113668938", policy)
         self.assertIn("нет общедоступной базы клиентов", policy)
         self.assertIn("технически невозможно", policy)
@@ -93,7 +93,7 @@ class SiteSecurityTests(unittest.TestCase):
         self.assertEqual(len(entries), count)
         self.assertGreaterEqual(len(entries), 52, 'Sitemap unexpectedly lost existing URLs')
         self.assertEqual(entries["https://xn--80aafwvmkbibjcl2m.xn--p1ai/"], "2026-11-23")
-        self.assertEqual(entries["https://xn--80aafwvmkbibjcl2m.xn--p1ai/privacy-policy.html"], "2026-11-23")
+        self.assertEqual(entries["https://xn--80aafwvmkbibjcl2m.xn--p1ai/privacy-policy.html"], "2026-11-24")
 
 if __name__ == "__main__":
     unittest.main()
