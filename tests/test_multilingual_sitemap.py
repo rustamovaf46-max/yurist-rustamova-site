@@ -73,6 +73,30 @@ class MultilingualSitemapTest(unittest.TestCase):
                     parser.feed(page.read_text(encoding="utf-8"))
                     self.assertFalse(parser.problems, f"{page}: {parser.problems[:8]}")
 
+    def test_translation_canonical_is_self_referencing(self):
+        from html.parser import HTMLParser
+
+        class Metadata(HTMLParser):
+            def __init__(self):
+                super().__init__()
+                self.canonicals = []
+                self.robots = []
+            def handle_starttag(self, tag, attrs):
+                a = dict(attrs)
+                if tag == "link" and "canonical" in a.get("rel", "").lower().split():
+                    self.canonicals.append(a.get("href", ""))
+                if tag == "meta" and a.get("name", "").lower() in {"robots", "googlebot", "yandex"}:
+                    self.robots.extend(a.get("content", "").lower().replace(",", " ").split())
+
+        for lang in sorted(LANGUAGES):
+            for page in sorted((ROOT / lang).glob("*.html")):
+                with self.subTest(page=str(page.relative_to(ROOT))):
+                    parser = Metadata()
+                    parser.feed(page.read_text(encoding="utf-8"))
+                    expected = "https://" + HOST + "/" + page.relative_to(ROOT).as_posix()
+                    self.assertEqual(parser.canonicals, [expected])
+                    self.assertFalse({"noindex", "none"} & set(parser.robots))
+
     def test_reciprocal_hreflang_clusters(self):
         from html.parser import HTMLParser
 
