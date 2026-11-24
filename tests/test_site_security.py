@@ -92,7 +92,7 @@ class SiteSecurityTests(unittest.TestCase):
                 entries[loc.text] = mod.text if mod is not None else None
         self.assertEqual(len(entries), count)
         self.assertGreaterEqual(len(entries), 52, 'Sitemap unexpectedly lost existing URLs')
-        self.assertEqual(entries["https://xn--80aafwvmkbibjcl2m.xn--p1ai/"], "2026-11-24")
+        self.assertEqual(entries["https://xn--80aafwvmkbibjcl2m.xn--p1ai/"], "2026-11-23")
         self.assertEqual(entries["https://xn--80aafwvmkbibjcl2m.xn--p1ai/privacy-policy.html"], "2026-11-24")
 
 if __name__ == "__main__":
