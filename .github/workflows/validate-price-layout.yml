@@ -49,7 +49,8 @@ jobs:
                                             base + "pensionnye-spory-sfr-sud-moskva.html",
                                             base + "voennye-spory-vyplaty-semyam-moskva.html",
                                             base + "sudebnyy-yurist-goroda-moskovskoy-oblasti.html",
-                                            base + "sudebnyy-yurist-moskva-stantsii-metro.html"}
+                                            base + "sudebnyy-yurist-moskva-stantsii-metro.html",
+                                            base + "o-yuriste-fatima-rustamova.html"}
           assert expected_library, "No legal articles in sitemap"
           from playwright.sync_api import sync_playwright
           url = pathlib.Path("index.html").resolve().as_uri()
