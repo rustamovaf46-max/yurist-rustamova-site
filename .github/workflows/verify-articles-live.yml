@@ -361,7 +361,13 @@ jobs:
           # четыре пропущенных выпуска за 19–22 ноября. Реальные даты публикаций
           # остаются 22.11; общий ежедневный предел на последующие дни — один.
           # Контроль задолженности: https://github.com/rustamovaf46-max/yurist-rustamova-site/issues/22
-          expected_count = 4 if expected_day == "2026-11-22" else 1
+          # Дополнительная авторская статья от 24.11.2026 по прямому поручению
+          # владельца: https://minjust.gov.ru/ru/events/51489/ .
+          # В этот день ровно два самостоятельных русскоязычных выпуска:
+          # про заочное решение и про проект реформы ГПК/АПК.
+          # Переводы EN/ZH/AR в ежедневный счётчик не включаются.
+          approved_extra = {"2026-11-22": 4, "2026-11-24": 2}
+          expected_count = approved_extra.get(expected_day, 1)
           if len(candidates) != expected_count:
               raise SystemExit(
                   "::error::Неверное число новых статей за " + expected_day +
