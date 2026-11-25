@@ -40,6 +40,24 @@ jobs:
         run: |
           python3 -m py_compile scripts/zeus-independent-ai-seo.py
           python3 scripts/zeus-independent-ai-seo.py --provider dry-run --approved no
+      - name: Проверить наличие настроек без раскрытия ключей
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.provider == 'dry-run' }}
+        env:
+          GEMINI_API_KEY: ${{ secrets.ZEUS_GEMINI_API_KEY }}
+          YANDEX_AI_API_KEY: ${{ secrets.ZEUS_YANDEX_AI_API_KEY }}
+          YANDEX_AI_FOLDER_ID: ${{ secrets.ZEUS_YANDEX_AI_FOLDER_ID }}
+        shell: bash
+        run: |
+          if [[ -n "$GEMINI_API_KEY" ]]; then
+            echo "Gemini: ключ настроен"
+          else
+            echo "Gemini: ключ не настроен"
+          fi
+          if [[ -n "$YANDEX_AI_API_KEY" && -n "$YANDEX_AI_FOLDER_ID" ]]; then
+            echo "Alice AI: ключ и каталог настроены"
+          else
+            echo "Alice AI: не хватает ключа или каталога"
+          fi
       - name: Вызвать внешние модели только при отдельном подтверждении
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.approved == 'yes' && inputs.provider != 'dry-run' }}
         env:
