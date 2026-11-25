@@ -87,10 +87,10 @@ def review_gemini(prompt):
     key = os.environ.get("GEMINI_API_KEY", "")
     if not key:
         raise RuntimeError("GEMINI_API_KEY отсутствует в GitHub Secrets")
-    endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+    endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent"
     result = post_json(endpoint, {"x-goog-api-key": key, "Content-Type": "application/json"},
                        {"contents": [{"role": "user", "parts": [{"text": prompt}]}],
-                        "generationConfig": {"maxOutputTokens": 2500, "temperature": 0.2}})
+                        "generationConfig": {"maxOutputTokens": 2500}})
     return "\n".join(str(part.get("text", "")) for c in result.get("candidates", []) for part in c.get("content", {}).get("parts", [])).strip()
 
 def review_alice(prompt):
