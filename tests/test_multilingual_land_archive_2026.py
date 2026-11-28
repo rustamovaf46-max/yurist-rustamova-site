@@ -72,6 +72,41 @@ class MultilingualLandArchiveTests(unittest.TestCase):
                     }
                     self.assertEqual(alternates, expected_alternates)
 
+    def test_new_articles_have_direct_contact_actions(self):
+        for slug in SLUGS:
+            for lang in LANGUAGES:
+                with self.subTest(slug=slug, lang=lang):
+                    html = path_for(slug, lang).read_text(encoding="utf-8")
+                    self.assertIn('href="tel:+79099282398"', html)
+                    self.assertIn(
+                        'href="https://max.ru/u/f9LHodD0cOJXOThelfL4zEZsDHL2apF2b_WxxjVt948nXhHX6XZt-opsspM"',
+                        html,
+                    )
+
+    def test_english_metadata_fits_search_snippets(self):
+        # CJK scripts should not be evaluated with English whitespace word counters.
+        for slug in SLUGS:
+            with self.subTest(slug=slug):
+                html = path_for(slug, "en").read_text(encoding="utf-8")
+                title = re.search(r"<title>(.*?)</title>", html, re.DOTALL)
+                self.assertIsNotNone(title)
+                self.assertGreaterEqual(len(title.group(1)), 30)
+                self.assertLessEqual(len(title.group(1)), 60)
+                description = re.search(
+                    r'<meta name="description" content="([^"]*)"', html
+                )
+                self.assertIsNotNone(description)
+                self.assertGreaterEqual(len(description.group(1)), 110)
+                self.assertLessEqual(len(description.group(1)), 160)
+
+    def test_fee_recovery_sources_include_contemporaneous_ruling(self):
+        slug = "vzyskanie-sudebnyh-rashodov-na-predstavitelya.html"
+        for lang in LANGUAGES:
+            with self.subTest(lang=lang):
+                html = path_for(slug, lang).read_text(encoding="utf-8")
+                self.assertIn("cons_doc_LAW_547171/", html)
+                self.assertIn("vsrf.ru/documents/all/8474", html)
+
     def test_library_exposes_translations(self):
         library = (ROOT / "sudebnaya-praktika-i-obraztsy.html").read_text(
             encoding="utf-8"
