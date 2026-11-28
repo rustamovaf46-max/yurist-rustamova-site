@@ -14,6 +14,7 @@ XHTML_NS = "{http://www.w3.org/1999/xhtml}"
 SLUGS = (
     "servitut-dlya-prohoda-cherez-sosedniy-uchastok.html",
     "ustranenie-prepyatstv-v-polzovanii-zemelnym-uchastkom.html",
+    "ispravlenie-reestrovoy-oshibki-granits-uchastka.html",
 )
 LANGUAGES = ("ru", "en", "zh", "ar")
 
