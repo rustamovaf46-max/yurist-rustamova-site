@@ -12,6 +12,7 @@ BASE = "https://xn--80aafwvmkbibjcl2m.xn--p1ai"
 SITEMAP_NS = "{http://www.sitemaps.org/schemas/sitemap/0.9}"
 XHTML_NS = "{http://www.w3.org/1999/xhtml}"
 SLUGS = (
+    "vzyskanie-sudebnyh-rashodov-na-predstavitelya.html",
     "vselenie-v-kvartiru-cherez-sud.html",
     "obespechitelnye-mery-zemelnyj-spor-2026.html",
     "servitut-dlya-prohoda-cherez-sosedniy-uchastok.html",
